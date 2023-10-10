@@ -1,7 +1,7 @@
 version: '3'
 services:
   node-app:
-    container_name: version-one-app-container
+    container_name: version-one-mobser-container
     build: 
       context: .
       target: production
