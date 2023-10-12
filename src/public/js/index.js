@@ -1,13 +1,12 @@
 const axios = require('axios')
 
-console.log('anything')
+
 
 const resetPasswordForm = document.querySelector('.form-reset-password')
 
 
 if(resetPasswordForm){
     try{
-    console.log(res.locals)
     resetPasswordForm.addEventListener('submit', async e => {
         e.preventDefault();
         const newPassword = document.getElementById('newpassword').value;
@@ -19,9 +18,9 @@ if(resetPasswordForm){
             url,
             data
           });
-            console.log(res.data.status)
+            
       });
     }catch (err) {
-       console.log(err)
+       
       }
 }

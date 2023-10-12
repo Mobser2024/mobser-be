@@ -44,9 +44,10 @@ const userSchema = mongoose.Schema({
         required: [true, 'The user must have a type'],
         enum : ['user','relative'],
     },
-    relatedUsers: [{
+    relatives: [{
         type: mongoose.Schema.ObjectId,
         ref: 'User',
+        
     }],
     gender: {
         type: String,
@@ -55,39 +56,46 @@ const userSchema = mongoose.Schema({
     },
     isVerified: {
         type: Boolean,
-        default: false
+        default: true
     },
     createdAt: { 
         type: Date,
         default: new Date(Date.now())
     },
-    passwordChangedAt: Date,
+    sensitiveDataChangedAt: {
+        type: Date,
+        select: false
+    
+    },
     
     isActive: {
         type: Boolean,
         default: true,
         select: false
     },
-    socketId: String
+    socketId: {
+        type: String,
+        select: false
+    }
 })
 
 userSchema.pre('save',async function(next){
     if(this.isModified('password')){
      this.password = await bcrypt.hash(this.password, 12)
      if(!this.isNew){
-        this.passwordChangedAt = Date.now() - 1000
+        this.sensitiveDataChangedAt = Date.now() - 1000
      }
     }
     return next()
 })
 
 userSchema.pre('save',async function(next){
-    if(this.relatedUsers){
-     this.relatedUsers = await Promise.all(this.relatedUsers.map(async (el) => {
-        return await User.findOne({username : el})._id
-     }))
+    if(this.isModified('email')){
+     //this.isVerified = false
+     if(!this.isNew){
+        this.sensitiveDataChangedAt = Date.now() - 1000
+     }
     }
-    return next()
 })
 
 userSchema.pre('save',async function(next){
@@ -109,26 +117,17 @@ userSchema.pre('save',async function(next){
   next()
 })
 
-userSchema.post('save',async function(doc){
-    await User.updateMany({_id: {
-        $in: doc.relatedUsers
-     }},{
-     relatedUsers: {
-        $push: doc._id
 
-     }}
-     )
-})
 
 userSchema.methods.isCorrectPassword = async function(candidatePassword,userPassword){
     return await bcrypt.compare(candidatePassword,userPassword)
 }
 
-userSchema.methods.isPasswordChangedAfter =  function(jwtTimeStamp){
+userSchema.methods.isSensitiveDataChangedAfter =  function(jwtTimeStamp){
     
     //False means that password not changed after the token which is ok
-    if(this.passwordChangedAt){
-        return jwtTimeStamp < Math.ceil(this.passwordChangedAt.getTime()/1000)
+    if(this.sensitiveDataChangedAt){
+        return jwtTimeStamp < Math.ceil(this.sensitiveDataChangedAt.getTime()/1000)
     }
     return false
 }
