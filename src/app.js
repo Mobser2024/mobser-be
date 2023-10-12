@@ -10,6 +10,7 @@ const mongoSanitize = require('express-mongo-sanitize')
 const xss = require('xss-clean')
 const compression = require('compression')
 const authRouter = require('./routes/authRoutes')
+const userRouter = require('./routes/userRoutes')
 const chatRouter = require('./routes/chatRoutes')
 const viewRouter = require('./routes/viewRoutes') 
 const errorHandler = require('./controllers/errorController')
@@ -29,7 +30,7 @@ app.use(cors())
 io.on('connection',(socket)=>{
     //console.log(socket)
     const token = socket.handshake.headers.authorization ? socket.handshake.headers.authorization.split(' ')[1]: null;
-    console.log(token)
+   
     chatController.assignSocketIdToUser(token,socket)
     console.log(`New websocket connection`)
     socket.on('sendMessage',(data)=> {
@@ -41,6 +42,9 @@ io.on('connection',(socket)=>{
         chatController.removeSocketId(socket.id)
       });
 })
+
+// app.set('trust proxy', true);
+
 
 app.set('view engine', 'pug')
 app.set('views',path.join(__dirname, 'views'))
@@ -82,7 +86,8 @@ app.use(compression())
 
 app.use('/',viewRouter)
 app.use('/api/v1/auth/',authRouter)
-app.use('/api/v1/chat/',chatRouter)
+app.use('/api/v1/users/',userRouter)
+app.use('/api/v1/chats/',chatRouter)
 
 
 app.all('*',(req,res,next)=>{

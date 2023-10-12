@@ -74,13 +74,13 @@ exports.protect = catchAsync(async (req,res,next)=>{
 
     const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET)
 
-    const currentUser = await User.findById(decoded.id)
-
+    const currentUser = await User.findById(decoded.id).select('+isActive')
+     
     if(!currentUser || !currentUser.isActive){
         return next(new AppError('The User belongs to this token does no longer exist.',401))
     }
 
-    if(currentUser.isPasswordChangedAfter(decoded.iat)){
+    if(currentUser.isSensitiveDataChangedAfter(decoded.iat)){
         return next(new AppError('User recently changed password. Please log in again',401))
     }
 
@@ -94,6 +94,9 @@ exports.protect = catchAsync(async (req,res,next)=>{
 })
 
 exports.signup = catchAsync(async (req,res,next)=>{
+    if(req.body.userType == 'relative' && !req.body.relatives){
+        return next(new AppError('relative must have a regular user as relative at least',400))
+    }
     const newUser = await User.create({
         name: req.body.name,
         username: req.body.username,
@@ -103,11 +106,21 @@ exports.signup = catchAsync(async (req,res,next)=>{
         email: req.body.email ,
         password: req.body.password,
     })
+if(req.body.relatives){
+    
+    for(let i = 0;i<req.body.relatives.length;i++){
+        
+        const user = await User.findOne({username:req.body.relatives[i]})
+        newUser.relatives.push(user)
+    }
+    await newUser.save()
+}
     const token = signToken(newUser.id,'emailVerification')
+   
   const base64EncodedToken = Buffer.from(token).toString('base64');
-  console.log(base64EncodedToken)
+  
   const url = `${req.protocol}://${req.get('host')}/api/v1/auth/verify-email/${base64EncodedToken}`
-   await new Email(newUser,url).sendEmailVerification()
+   //await new Email(newUser,url).sendEmailVerification()
      
     res.status(201).json({
         status:"success",
@@ -124,13 +137,13 @@ exports.verifyAccount = catchAsync(async (req,res,next) => {
     const token = signToken(decoded.id,'emailVerification')
     const base64EncodedToken = Buffer.from(token).toString('base64');
     const url = `${req.protocol}://${req.get('host')}/api/v1/auth/verify-email/${base64EncodedToken}`
-     await new Email(user,url).sendEmailVerification()
+   //  await new Email(user,url).sendEmailVerification()
     return next(new AppError('This token is expired. Please check your mail box for new link',400))
    }
 
-    const freshUser = await User.findByIdAndUpdate(decoded.id,{isVerified:true})
+    const freshUser = await User.findByIdAndUpdate(decoded.id,{isVerified:true}).select('+isActive')
 
-    if(!freshUser){
+    if(!freshUser || !freshUser.isActive){
         return next(new AppError('The User belongs to this token does no longer exist.',401))
     }
 
@@ -143,8 +156,13 @@ exports.login = catchAsync(async (req,res,next)=>{
     if(!req.body.email  || !req.body.password){
       return  next(new AppError(`Please provide email and password`,400))
     }
-    const user = await  User.findOne({email: req.body.email,isActive:true,isVerified:true}).select('+password') 
-
+    const user = await  User.findOne({email: req.body.email}).select('+password') 
+   if(user && user.isVerfied === false){
+    return next(new AppError(`This email isn't verified yet.`,401))
+   }
+   if(user && user.isActive === false){
+    return next(new AppError(`The User belongs to this email does no longer exist.`,401))
+   }
     if(!user || !(await user.isCorrectPassword(req.body.password,user.password))){
         return next(new AppError(`Invalid Credentials`,401))
     }
@@ -160,7 +178,7 @@ exports.forgotPassword = catchAsync(async(req,res,next)=>{
     const resetToken = signToken(user.id,'resetPassword')
     const base64EncodedToken = Buffer.from(resetToken).toString('base64');
     const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${base64EncodedToken}`
-    await new Email(user,resetUrl).sendPasswordReset()
+   // await new Email(user,resetUrl).sendPasswordReset()
     res.status(200).json({
         status: "success",
         message: "Token sent to email successfully"
@@ -177,7 +195,7 @@ exports.resetPassword = catchAsync(async(req,res,next)=>{
         const token = signToken(decoded.id,'resetPassword')
         const base64EncodedToken = Buffer.from(token).toString('base64');
         const url = `${req.protocol}://${req.get('host')}/api/v1/auth/reset-password/${base64EncodedToken}`
-        await new Email(user,url).sendPasswordReset()
+        //await new Email(user,url).sendPasswordReset()
         return next(new AppError('This token is expired. Please check your mail box for new link',400))
     }
 
@@ -186,15 +204,33 @@ exports.resetPassword = catchAsync(async(req,res,next)=>{
 exports.updatePassword = catchAsync(async (req,res,next)=>{
     const user = await User.findById(req.user.id).select('+password')
     if(!(await user.isCorrectPassword(req.body.currentPassword,user.password))){
-        return next(new AppError('Invalid current password',401))
+        return next(new AppError('Wrong current password',401))
     }
 
     user.password = req.body.newPassword
 
     await user.save()
 
-    createAndSendToken(user,200,res,false,req)
+    createAndSendToken(user,200,res,false,req) 
+})
 
+exports.updateEmail = catchAsync(async (req,res,next)=>{
+    const user = await User.findById(req.user.id)
+   
 
+    user.email = req.body.email
+   // user.isVerified = false
+
+    await user.save()
+
+    const token = signToken(user.id,'emailVerification')
+    const base64EncodedToken = Buffer.from(token).toString('base64');
+    const url = `${req.protocol}://${req.get('host')}/api/v1/auth/verify-email/${base64EncodedToken}`
+   //  await new Email(user,url).sendEmailVerification()
+
+    res.status(200).json({
+        status:"success",
+        message: 'Email Verification has been send.'
+   })
 })
 

@@ -17,15 +17,15 @@ exports.assignSocketIdToUser = async (token,socket)=> {
 }
 
 exports.removeSocketId = async (socketId) => {
-    console.log(socketId)
+    
     const user = await User.findOneAndUpdate({socketId},{$unset : {socketId:""}},{new:true})
-    console.log(user)
+   
 }
 
 exports.sendMessage = async (data,io) => {
     
-    const currentUser = await User.findOne({socketId: data.socketId})
-    if(!currentUser){
+    const currentUser = await User.findOne({socketId: data.socketId}).select('+isActive')
+    if(!currentUser || !currentUser.isActive){
         return io.to(data.socketId).emit('error', 'The User belongs to this token does no longer exist.');
       
     }
@@ -50,7 +50,7 @@ exports.sendMessage = async (data,io) => {
 }
 
 exports.getMessages = catchAsync(async (req,res,next)=>{
-    console.log(req.user.id,' : ',req.params.userId)
+    
     const conditionA = {$and:[{from:req.user.id},{to:req.params.userId}]}
     const conditionB = {$and:[{to: req.user.id},{from:req.params.userId}]}
     const messages = await Message.find({
