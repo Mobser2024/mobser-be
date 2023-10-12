@@ -44,11 +44,14 @@ const userSchema = mongoose.Schema({
         required: [true, 'The user must have a type'],
         enum : ['user','relative'],
     },
-    relatives: [{
+    relatives: {
+        type: [{
         type: mongoose.Schema.ObjectId,
         ref: 'User',
         
     }],
+    select: false
+},
     gender: {
         type: String,
         required: [true, 'The user must have a gender'],
