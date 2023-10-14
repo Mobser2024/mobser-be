@@ -81,7 +81,7 @@ exports.protect = catchAsync(async (req,res,next)=>{
     }
 
     if(currentUser.isSensitiveDataChangedAfter(decoded.iat)){
-        return next(new AppError('User recently changed password. Please log in again',401))
+        return next(new AppError('User recently changed password or email. Please log in again',401))
     }
 
     if(!currentUser.isVerified){
