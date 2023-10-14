@@ -62,7 +62,7 @@ const sendErrorProd = (err,req,res) =>{
         message: err.message
     })
 }else{
-   return   res.status(500).json({
+   return  res.status(400).json({
         status: 'error',
         message: 'Something went wrong'
     })
@@ -71,7 +71,7 @@ const sendErrorProd = (err,req,res) =>{
 }
 
 module.exports = (err,req,res,next)=>{
-    err.statusCode = err.statusCode || 500
+    err.statusCode = err.statusCode || 400
     err.status = err.status || 'error'
     if(process.env.NODE_ENV === 'development'){
        sendErrorDev(err,req,res)
