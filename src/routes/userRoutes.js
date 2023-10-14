@@ -15,5 +15,7 @@ router.patch('/add-relative',authController.protect,userController.addRelativeUs
 
 router.route('/relatives').get(authController.protect,userController.getRelatives)
 
+router.get('/check-user/:username',userController.checkUsername)
+
 
 module.exports = router

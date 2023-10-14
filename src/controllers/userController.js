@@ -99,3 +99,15 @@ exports.deleteMe = catchAsync(async (req,res,next)=>{
         status: "success"
     })
 })
+
+exports.checkUsername = catchAsync(async (req,res,next) => {
+    const user = await User.findOne({username: req.params.username})
+    if(!user){
+        return next(new AppError("No user with this username",404))
+        
+    }
+    res.status(200).json({
+        status: "success",
+        message: "user found"
+    })
+})
