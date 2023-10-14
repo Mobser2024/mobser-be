@@ -54,8 +54,11 @@ exports.addRelativeUser = catchAsync(async (req,res,next)=>{
   for(let i = 0;i<req.body.relatives.length;i++){
         
     const relative = await User.findOne({username:req.body.relatives[i]})
-    
+    if(user.relatives){
     user.relatives.push(relative)
+    }else{
+        user.relatives= [relative]
+    }
     }
    
     await user.save()
