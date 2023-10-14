@@ -28,7 +28,7 @@ const io = socketio(server)
 app.use(cors())
 
 io.on('connection',(socket)=>{
-    //console.log(socket)
+    console.log(socket)
     const token = socket.handshake.headers.authorization ? socket.handshake.headers.authorization.split(' ')[1]: null;
    
     chatController.assignSocketIdToUser(token,socket)
