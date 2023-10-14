@@ -15,7 +15,7 @@ const filterObj = (obj,...allowedFields) =>{
 
 exports.getMe = catchAsync(async (req,res,next)=>{
     req.user.isActive = undefined
-    res.status(201).json({
+    res.status(200).json({
         status:"success",
         data: {
             user:req.user
