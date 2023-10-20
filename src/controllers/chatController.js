@@ -62,7 +62,7 @@ exports.getMessages = catchAsync(async (req,res,next)=>{
     const conditionB = {$and:[{to: req.user.id},{from:req.params.userId}]}
     const messages = await Message.find({
         $or: [conditionA,conditionB]
-    }).sort({ createdAt: 1 })
+    }).sort({ createdAt: -1 })
     res.status(200).json({
         status:"success",
         data: {
