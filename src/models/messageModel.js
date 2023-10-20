@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const messageSchema = mongoose.Schema({
    message: {
     type: String,
-    required: [true,`There's no message`]
+    //required: [true,`There's no message`]
    },
    from: {
         type: mongoose.Schema.ObjectId,
