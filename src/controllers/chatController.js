@@ -34,7 +34,7 @@ exports.sendMessage = async (data,io) => {
 
    
    
-    const toUser = await User.findById(data.to)
+    const toUser = await User.findById(data.to).select('+socketId')
    
 
     //TODO handle message data not in db
@@ -43,7 +43,9 @@ exports.sendMessage = async (data,io) => {
         to: toUser._id,
         message: data.message
     })
+    console.log(toUser)
     if(toUser.socketId){
+        console.log('user is online')
         io.to(toUser.socketId).emit('message', message);
     }
 
@@ -60,7 +62,7 @@ exports.getMessages = catchAsync(async (req,res,next)=>{
     const conditionB = {$and:[{to: req.user.id},{from:req.params.userId}]}
     const messages = await Message.find({
         $or: [conditionA,conditionB]
-    }).sort({ createdAt: -1 })
+    }).sort({ createdAt: 1 })
     res.status(200).json({
         status:"success",
         data: {
