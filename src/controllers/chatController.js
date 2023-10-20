@@ -41,7 +41,8 @@ exports.sendMessage = async (data,io) => {
     const message = await Message.create({
         from:currentUser._id,
         to: toUser._id,
-        message: data.message
+        message: data.message,
+        createdAt: new Date(Date.now())
     })
     console.log(toUser)
     if(toUser.socketId){
