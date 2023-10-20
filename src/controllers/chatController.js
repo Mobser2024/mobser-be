@@ -24,7 +24,8 @@ exports.removeSocketId = async (socketId) => {
 }
 
 exports.sendMessage = async (data,io) => {
-    
+    try{
+    console.log(data)
     const currentUser = await User.findOne({socketId: data.socketId}).select('+isActive')
     if(!currentUser || !currentUser.isActive){
         return io.to(data.socketId).emit('error', 'The User belongs to this token does no longer exist.');
@@ -47,6 +48,9 @@ exports.sendMessage = async (data,io) => {
     }
 
     console.log(message)
+}catch(e){
+    return io.to(data.socketId).emit('error', 'Something went wrong');
+}
 
 }
 
