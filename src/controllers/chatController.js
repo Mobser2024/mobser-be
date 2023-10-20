@@ -7,7 +7,8 @@ const {promisify} = require('util')
 exports.assignSocketIdToUser = async (token,socket)=> {
     if(!token){
        // io.to(socket.id).emit('error',`You are not logged in!`)
-        return socket.emit('error',`You are not logged in!`)
+       socket.emit('error',`You are not logged in!`)
+        return socket.disconnect()
         
     }
 
