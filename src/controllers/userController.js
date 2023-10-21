@@ -49,8 +49,7 @@ exports.updateMe = catchAsync(async (req,res,next) => {
 })
 
 exports.addRelativeUser = catchAsync(async (req,res,next)=>{
-    const user = await User.findById(req.user.id)
-    
+    const user = await User.findById(req.user.id).select('+relatives')
   for(let i = 0;i<req.body.relatives.length;i++){
         
     const relative = await User.findOne({username:req.body.relatives[i]})
