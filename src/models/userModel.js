@@ -103,6 +103,7 @@ userSchema.pre('save',async function(next){
 
 userSchema.pre('save',async function(next){
     // Remove spaces and convert the full name to lowercase
+    if(!this.username){
   const cleanedName = this.name.replace(/\s/g, '').toLowerCase();
   let username = cleanedName
   let userExist = true
@@ -117,6 +118,7 @@ userSchema.pre('save',async function(next){
     username = `${cleanedName}${suffix}`
   }
   this.username = `${username}`;
+}
   next()
 })
 
