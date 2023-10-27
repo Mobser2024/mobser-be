@@ -2,6 +2,7 @@ version: '3'
 services:
   node-app:
     container_name: version-one-mobser-container
+    image: hazemhamdy/mobser-be
     build: 
       context: .
       target: production
