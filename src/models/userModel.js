@@ -79,6 +79,11 @@ const userSchema = mongoose.Schema({
     socketId: {
         type: String,
         select: false
+    },
+    socketStatus: {
+        type: String,
+        select: false,
+        enum : ['chat','mapTracking','chatAndMapTracking'],
     }
 })
 

@@ -1,6 +1,8 @@
 const User = require('../models/userModel')
 const AppError = require('../utils/appError')
 const catchAsync = require('../utils/catchAsync')
+const {promisify} = require('util')
+const jwt = require('jsonwebtoken')
 
 const filterObj = (obj,...allowedFields) =>{
     const newObj = {}
@@ -113,7 +115,8 @@ exports.checkUsername = catchAsync(async (req,res,next) => {
     })
 })
 
-exports.assignSocketIdToUser = async (token,socket)=> {
+exports.assignSocketIdToUser = async (token,socket,socketStatus)=> {
+    try{
     if(!token){
        // io.to(socket.id).emit('error',`You are not logged in!`)
        socket.emit('error',`You are not logged in!`)
@@ -122,12 +125,28 @@ exports.assignSocketIdToUser = async (token,socket)=> {
     }
 
     const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET)
+    const currentUser = await User.findById(decoded.id).select('+socketId')
+    if(currentUser.socketId){
+        socket.emit('error',`You have a socket. Please use this socket and not open another one!`)
+        return socket.disconnect()
+    }
+    currentUser.socketId = socket.id
+    currentUser.socketStatus = socketStatus
+    await currentUser.save()
 
-    const currentUser = await User.findByIdAndUpdate(decoded.id,{socketId:socket.id})
+   // const currentUser = await User.findByIdAndUpdate(decoded.id,{socketId:socket.id,socketStatus})
+}catch(e){
+    console.log(e)
+    socket.emit('error',`Something went wrong`)
+    return socket.disconnect()
+}
+
+}
+
+exports.changeSocketStatus = async (socketId,socketStatus) => {
+   const user = await User.findOneAndUpdate({socketId},{socketStatus},{new:true})
 }
 
 exports.removeSocketId = async (socketId) => {
-    
-    const user = await User.findOneAndUpdate({socketId},{$unset : {socketId:""}},{new:true})
-   
+    const user = await User.findOneAndUpdate({socketId},{$unset : {socketId:"",socketStatus:""}},{new:true})
 }
