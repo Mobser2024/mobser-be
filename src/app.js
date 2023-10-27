@@ -16,6 +16,7 @@ const viewRouter = require('./routes/viewRoutes')
 const errorHandler = require('./controllers/errorController')
 const chatController = require('./controllers/chatController')
 const userController = require('./controllers/userController')
+const mapController = require('./controllers/mapController')
 const AppError = require('./utils/appError')
 const { default: helmet } = require('helmet')
 
@@ -29,21 +30,36 @@ const io = socketio(server)
 app.use(cors())
 
 io.on('connection',(socket)=>{
-    console.log(socket)
+    //console.log(socket)
     const token = socket.handshake.headers.authorization ? socket.handshake.headers.authorization.split(' ')[1]: null;
    
-    chatController.assignSocketIdToUser(token,socket)
+    userController.assignSocketIdToUser(token,socket)
     console.log(`New websocket connection`)
+
+
     socket.on('sendMessage',(data)=> {
-        
         chatController.sendMessage({socketId:socket.id,...data},io)
     })
-    socket.on('requestTracking',(data)=>{
 
+    socket.on('requestTracking',(data)=>{
+     mapController.requestTracking()
     })
+
+    socket.on('changeMyPosition',(data)=> {
+        mapController.changePosititon(io,data,socket)
+    })
+
+    socket.on('rejectTracking',(data)=> {
+        mapController.rejectTracking(io,data)
+    })
+
+    socket.on('changeSocketStatus',(data)=> {
+        userController.changeSocketStatus(socket.id,data.socketStatus)
+    })
+
     socket.on('disconnect', () => {
         console.log('disconnected')
-        chatController.removeSocketId(socket.id)
+        userController.removeSocketId(socket.id)
       });
 })
 

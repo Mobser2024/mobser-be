@@ -4,24 +4,24 @@ const jwt = require('jsonwebtoken')
 const catchAsync = require('../utils/catchAsync')
 const {promisify} = require('util')
 
-exports.assignSocketIdToUser = async (token,socket)=> {
-    if(!token){
-       // io.to(socket.id).emit('error',`You are not logged in!`)
-       socket.emit('error',`You are not logged in!`)
-        return socket.disconnect()
+// exports.assignSocketIdToUser = async (token,socket)=> {
+//     if(!token){
+//        // io.to(socket.id).emit('error',`You are not logged in!`)
+//        socket.emit('error',`You are not logged in!`)
+//         return socket.disconnect()
         
-    }
+//     }
 
-    const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET)
+//     const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET)
 
-    const currentUser = await User.findByIdAndUpdate(decoded.id,{socketId:socket.id})
-}
+//     const currentUser = await User.findByIdAndUpdate(decoded.id,{socketId:socket.id})
+// }
 
-exports.removeSocketId = async (socketId) => {
+// exports.removeSocketId = async (socketId) => {
     
-    const user = await User.findOneAndUpdate({socketId},{$unset : {socketId:""}},{new:true})
+//     const user = await User.findOneAndUpdate({socketId},{$unset : {socketId:""}},{new:true})
    
-}
+// }
 
 exports.sendMessage = async (data,io) => {
     try{
@@ -34,7 +34,7 @@ exports.sendMessage = async (data,io) => {
 
    
    
-    const toUser = await User.findById(data.to).select('+socketId')
+    const toUser = await User.findById(data.to).select('+socketId +socketStatus')
    
 
     //TODO handle message data not in db
@@ -45,9 +45,10 @@ exports.sendMessage = async (data,io) => {
         createdAt: new Date(Date.now())
     })
     console.log(toUser)
-    if(toUser.socketId){
+    if(toUser.socketId && (toUser.socketStatus === 'chat' || toUser.socketStatus === 'chatAndMapTracking')){
         console.log('user is online')
         io.to(toUser.socketId).emit('message', message);
+        
     }
 
     console.log(message)
