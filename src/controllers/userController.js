@@ -112,3 +112,22 @@ exports.checkUsername = catchAsync(async (req,res,next) => {
         message: "user found"
     })
 })
+
+exports.assignSocketIdToUser = async (token,socket)=> {
+    if(!token){
+       // io.to(socket.id).emit('error',`You are not logged in!`)
+       socket.emit('error',`You are not logged in!`)
+        return socket.disconnect()
+        
+    }
+
+    const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET)
+
+    const currentUser = await User.findByIdAndUpdate(decoded.id,{socketId:socket.id})
+}
+
+exports.removeSocketId = async (socketId) => {
+    
+    const user = await User.findOneAndUpdate({socketId},{$unset : {socketId:""}},{new:true})
+   
+}

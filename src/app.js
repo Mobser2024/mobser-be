@@ -15,6 +15,7 @@ const chatRouter = require('./routes/chatRoutes')
 const viewRouter = require('./routes/viewRoutes') 
 const errorHandler = require('./controllers/errorController')
 const chatController = require('./controllers/chatController')
+const userController = require('./controllers/userController')
 const AppError = require('./utils/appError')
 const { default: helmet } = require('helmet')
 
@@ -36,6 +37,9 @@ io.on('connection',(socket)=>{
     socket.on('sendMessage',(data)=> {
         
         chatController.sendMessage({socketId:socket.id,...data},io)
+    })
+    socket.on('requestTracking',(data)=>{
+
     })
     socket.on('disconnect', () => {
         console.log('disconnected')
