@@ -1,5 +1,7 @@
 const mongoose =  require('mongoose')
 const dotenv = require("dotenv");
+const User = require('./models/userModel')
+
 
 process.on('uncaughtException', err => {
     console.log('UNCAUGHT EXCEPTION  Shutting down...')
@@ -27,6 +29,11 @@ const server = app.listen(port,
         //console.log(Date.now())
     })
 
+server.on('close',async ()=>{
+    console.log('server is closed')
+  await User.updateMany({},{$unset : {socketId:"",socketStatus:""}})
+})
+
 process.on('unhandledRejection', err => {
     console.log('UNHANDLED REJeCTION Shutting down...')
     console.log(err)
@@ -34,3 +41,4 @@ process.on('unhandledRejection', err => {
         process.exit(1)
     })
 })
+
