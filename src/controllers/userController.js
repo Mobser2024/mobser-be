@@ -31,7 +31,7 @@ exports.updateMe = catchAsync(async (req,res,next) => {
         return next(new AppError(`This route isn't for update password or email. Please use /auth/update-password. or /auth/update-email`,400))
     }
 
-    const filteredBody = filterObj(req.body,'name','username','gender','phoneNumber')
+    const filteredBody = filterObj(req.body,'name','username','gender','phoneNumber','addressLocation')
     
  
     const updatedUser = await User.findByIdAndUpdate(req.user.id,filteredBody,{

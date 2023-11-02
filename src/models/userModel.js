@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
-const AppError = require('../utils/appError')
 
 
 const userSchema = mongoose.Schema({
@@ -51,15 +50,24 @@ const userSchema = mongoose.Schema({
         
     }],
     select: false
-},
+    },
     gender: {
         type: String,
         required: [true, 'The user must have a gender'],
         enum: ['male','female']
     },
+    addressLocation: {
+        type: {
+          type: String, 
+          enum: ['Point'], 
+        },
+        coordinates: {
+          type: [Number],
+        }
+      },
     isVerified: {
         type: Boolean,
-        default: true
+        default: false
     },
     createdAt: { 
         type: Date,
@@ -70,7 +78,6 @@ const userSchema = mongoose.Schema({
         select: false
     
     },
-    
     isActive: {
         type: Boolean,
         default: true,
@@ -99,7 +106,7 @@ userSchema.pre('save',async function(next){
 
 userSchema.pre('save',async function(next){
     if(this.isModified('email')){
-     //this.isVerified = false
+     this.isVerified = false
      if(!this.isNew){
         this.sensitiveDataChangedAt = Date.now() - 1000
      }

@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Mobser2024/mobster-be#readme",
   "dependencies": {
+    "aws-sdk": "^2.1486.0",
     "axios": "^1.5.1",
     "bcryptjs": "^2.4.3",
     "bull": "^4.11.3",

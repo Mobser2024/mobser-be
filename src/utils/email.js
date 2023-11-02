@@ -1,5 +1,8 @@
 const nodemailer = require('nodemailer')
 const pug = require('pug')
+// const kue = require('kue');
+// const queue = kue.createQueue();
+
 
 module.exports = class email {
     constructor(user,url){
@@ -29,15 +32,18 @@ module.exports = class email {
         })
     }
 
-    async send(template,subject){
-        // Render HTML using pug
-        const html = pug.renderFile(`${__dirname}/../views/emails/${template}.pug`,{
+     send(template,subject){
+        // queue.process('sendEmail', (job, done) => {
+          //  const {subject} = job.data;
+
+            // Render HTML using pug
+          const html = pug.renderFile(`${__dirname}/../views/emails/${template}.pug`,{
             firstname: this.firstname,
             url: this.url,
             subject
         })
 
-        // Define mail options
+            // Define mail options
         const mailOptions = {
             from: this.from,
             to: this.to,
@@ -47,21 +53,34 @@ module.exports = class email {
              Please click the link to verify this email.: ${this.url} .`
         }
 
-        // create transport and send email
-        await this.newTransport().sendMail(mailOptions)
-       
+            // create transport and send email
+         this.newTransport().sendMail(mailOptions) 
+          
+          
+          // Create a new email sending job
+        //   const emailJob = queue.create('sendEmail', {
+        //     subject: 'Hello, World!'
+        //   });
+          
+        //   emailJob.save((error) => {
+        //     if (!error) {
+        //       console.log('Email job added to the queue.');
+        //     }
+        //   });
+          
+        
     }
 
-    async sendWelcome(){
-      await  this.send('welcome', 'Welcome to the Mobser family!')
+     sendWelcome(){
+        this.send('welcome', 'Welcome to the Mobser family!')
     }
 
-    async sendPasswordReset(){
-        await this.send('resetPassword', 'Your password reset token (valid for only 10 min')
+     sendPasswordReset(){
+         this.send('resetPassword', 'Your password reset token (valid for only 10 min')
     }
 
-    async sendEmailVerification(){
-        await this.send('emailVerification','Your email verification link (valid for only 10 min)')
+     sendEmailVerification(){
+         this.send('emailVerification','Your email verification link (valid for only 10 min)')
     }
 }
 
