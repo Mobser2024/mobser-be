@@ -70,7 +70,7 @@ exports.protect = catchAsync(async (req,res,next)=>{
 
     if(!token){
         return next(new AppError('You are not logged in!',401))
-    }
+    } 
 
     const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET)
 
@@ -120,7 +120,7 @@ if(req.body.relatives){
   const base64EncodedToken = Buffer.from(token).toString('base64');
   
   const url = `${req.protocol}://${req.get('host')}/api/v1/auth/verify-email/${base64EncodedToken}`
-   //await new Email(newUser,url).sendEmailVerification()
+    new Email(newUser,url).sendEmailVerification()
      
     res.status(201).json({
         status:"success",
@@ -137,7 +137,7 @@ exports.verifyAccount = catchAsync(async (req,res,next) => {
     const token = signToken(decoded.id,'emailVerification')
     const base64EncodedToken = Buffer.from(token).toString('base64');
     const url = `${req.protocol}://${req.get('host')}/api/v1/auth/verify-email/${base64EncodedToken}`
-   //  await new Email(user,url).sendEmailVerification()
+     new Email(user,url).sendEmailVerification()
     return next(new AppError('This token is expired. Please check your mail box for new link',400))
    }
 
@@ -178,7 +178,7 @@ exports.forgotPassword = catchAsync(async(req,res,next)=>{
     const resetToken = signToken(user.id,'resetPassword')
     const base64EncodedToken = Buffer.from(resetToken).toString('base64');
     const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${base64EncodedToken}`
-   // await new Email(user,resetUrl).sendPasswordReset()
+    new Email(user,resetUrl).sendPasswordReset()
     res.status(200).json({
         status: "success",
         message: "Token sent to email successfully"
@@ -195,7 +195,7 @@ exports.resetPassword = catchAsync(async(req,res,next)=>{
         const token = signToken(decoded.id,'resetPassword')
         const base64EncodedToken = Buffer.from(token).toString('base64');
         const url = `${req.protocol}://${req.get('host')}/api/v1/auth/reset-password/${base64EncodedToken}`
-        //await new Email(user,url).sendPasswordReset()
+        new Email(user,url).sendPasswordReset()
         return next(new AppError('This token is expired. Please check your mail box for new link',400))
     }
 
@@ -226,7 +226,7 @@ exports.updateEmail = catchAsync(async (req,res,next)=>{
     const token = signToken(user.id,'emailVerification')
     const base64EncodedToken = Buffer.from(token).toString('base64');
     const url = `${req.protocol}://${req.get('host')}/api/v1/auth/verify-email/${base64EncodedToken}`
-   //  await new Email(user,url).sendEmailVerification()
+    new Email(user,url).sendEmailVerification()
 
     res.status(200).json({
         status:"success",

@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const User = require('./models/userModel')
 
 
+
 process.on('uncaughtException', err => {
     console.log('UNCAUGHT EXCEPTION  Shutting down...')
     console.log(err.name,err.message)
@@ -23,6 +24,8 @@ const app = require('./app');
 
 const port = process.env.PORT || 3000;   
 
+
+
 const server = app.listen(port,
     ()=>{
         console.log(`app is running on port : ${port}`)
@@ -31,7 +34,7 @@ const server = app.listen(port,
 
 server.on('close',async ()=>{
     console.log('server is closed')
-  await User.updateMany({},{$unset : {socketId:"",socketStatus:""}})
+   await User.updateMany({},{$unset : {socketId:"",socketStatus:""}})
 })
 
 process.on('unhandledRejection', err => {
