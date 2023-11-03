@@ -62,7 +62,8 @@ const userSchema = mongoose.Schema({
           enum: ['Point'], 
         },
         coordinates: {
-          type: [Number],
+          long: Number,
+          lat: Number
         }
       },
     isVerified: {
