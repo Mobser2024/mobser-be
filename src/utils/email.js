@@ -1,7 +1,10 @@
 const nodemailer = require('nodemailer')
 const pug = require('pug')
-// const kue = require('kue');
-// const queue = kue.createQueue();
+const kue = require('kue');
+const queue = kue.createQueue({redis: {
+    port: 6379,
+    host: 'redis'
+  }});
 
 
 module.exports = class email {
@@ -33,53 +36,94 @@ module.exports = class email {
     }
 
      send(template,subject){
-        // queue.process('sendEmail', (job, done) => {
-          //  const {subject} = job.data;
-
-            // Render HTML using pug
-          const html = pug.renderFile(`${__dirname}/../views/emails/${template}.pug`,{
-            firstname: this.firstname,
-            url: this.url,
-            subject
-        })
-
-            // Define mail options
-        const mailOptions = {
-            from: this.from,
-            to: this.to,
-            subject,
-            html,
-            text: ` Hi ${this.firstname},\n
-             Please click the link to verify this email.: ${this.url} .`
-        }
-
-            // create transport and send email
-         this.newTransport().sendMail(mailOptions) 
-          
-          
-          // Create a new email sending job
-        //   const emailJob = queue.create('sendEmail', {
-        //     subject: 'Hello, World!'
-        //   });
-          
-        //   emailJob.save((error) => {
-        //     if (!error) {
-        //       console.log('Email job added to the queue.');
-        //     }
-        //   });
-          
+        queue.process('sendEmail', (job, done) => {
+       
+            const {subject,template,to,from,url,firstname} = job.data;
+   
+             // Render HTML using pug
+           const html = pug.renderFile(`${__dirname}/../views/emails/${template}.pug`,{
+             firstname,
+             url,
+             subject
+         })
+   
+             // Define mail options
+         const mailOptions = {
+             from,
+             to,
+             subject,
+             html,
+             text: ` Hi ${this.firstname},\n
+              Please click the link to verify this email.: ${this.url} .`
+         }
+   
+             // create transport and send email
+         this.newTransport().sendMail(mailOptions,(error, info) => {
+             if (error) {
+               console.error('Email sending error:', error);
+               done(error);
+             } else {
+               console.log('Email sent:', info.response);
+               done();
+             }
+           })
+     })
         
     }
 
      sendWelcome(){
-        this.send('welcome', 'Welcome to the Mobser family!')
+        // Create a new email sending job
+        const emailJob = queue.create('sendEmail', {
+            subject: 'Welcome to the Mobser family!',
+            template: 'welcome',
+            to: this.to,
+            from: this.from,
+            url: this.url,
+            firstname: this.firstname
+          }).attempts(5);
+          
+          emailJob.save((error) => {
+            if (!error) {
+              console.log('Email job added to the queue.');
+            }
+          });
+       this.send('welcome', 'Welcome to the Mobser family!')
     }
 
      sendPasswordReset(){
+
+        const emailJob = queue.create('sendEmail', {
+            subject: 'Your password reset token (valid for only 10 min',
+            template: 'resetPassword',
+            to: this.to,
+            from: this.from,
+            url: this.url,
+            firstname: this.firstname
+          }).attempts(5);
+          
+          emailJob.save((error) => {
+            if (!error) {
+              console.log('Email job added to the queue.');
+            }
+          });
          this.send('resetPassword', 'Your password reset token (valid for only 10 min')
     }
 
      sendEmailVerification(){
+        const emailJob = queue.create('sendEmail', {
+            subject: 'Your email verification link (valid for only 10 min)',
+            template: 'emailVerification',
+            to: this.to,
+            from: this.from,
+            url: this.url,
+            firstname: this.firstname
+          }).attempts(5);
+          
+          emailJob.save((error) => {
+            if (!error) {
+              console.log('Email job added to the queue.');
+            }
+          });
          this.send('emailVerification','Your email verification link (valid for only 10 min)')
     }
 }
