@@ -3,6 +3,7 @@ const AppError = require('../utils/appError')
 const catchAsync = require('../utils/catchAsync')
 const {promisify} = require('util')
 const jwt = require('jsonwebtoken')
+const { relative } = require('path')
 
 const filterObj = (obj,...allowedFields) =>{
     const newObj = {}
@@ -53,14 +54,14 @@ exports.updateMe = catchAsync(async (req,res,next) => {
 exports.addRelativeUser = catchAsync(async (req,res,next)=>{
     const user = await User.findById(req.user.id).select('+relatives')
   for(let i = 0;i<req.body.relatives.length;i++){
-    const relative = await User.findOne({username:req.body.relatives[i]})
-    if(user.relatives && !user.relatives.includes(relative._id)){
+    const relative = await User.findOne({username:req.body.relatives[i]}).select('+relatives')
+    console.log(relative)
+    if(!user.relatives.includes(relative._id)){
     user.relatives.push(relative)
-    }else if(!user.relatives){
-        user.relatives= [relative]
+    relative.relatives.push(user)
+    await relative.save()
     }
     }
-   
     await user.save()
     res.status(200).json({
         status: "success",
@@ -71,20 +72,12 @@ exports.addRelativeUser = catchAsync(async (req,res,next)=>{
 })
 
 exports.getRelatives = catchAsync(async (req,res,next)=>{
-    
-    
-        const arr1 = await User.find({relatives:req.user._id})
         const user = await User.findById(req.user.id).populate({
             path: 'relatives',
             select: 'name username phoneNumber email'
         })
-        const arr2 = user.relatives
-        
 
-        console.log(arr2)
-
-     const relatives = [...arr1,...arr2]
-
+     const relatives =  user.relatives
      res.status(200).json({
         status: "success",
         data: {
