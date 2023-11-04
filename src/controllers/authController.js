@@ -43,24 +43,6 @@ const createAndSendToken = (user,statusCode,res,isCreateUser)=>{
 }
 }
 
-// const sendVarificationCode = (to,code,next) => {
-    
-//     const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-
-//     const messageParams = {
-//         body: `Your verification code is: ${code}`,
-//         from: '+19543200219',
-//         to // The recipient's phone number
-//       };
-
-//     client.messages.create(messageParams)
-//     .then((message)=> console.log(`message sent: ${message}`))
-//     .catch((err) => {
-//         console.error(`Error in sending message: ${err}`)
-//         return next(new AppError(err,500))
-//     })
-// }
-
 
 exports.protect = catchAsync(async (req,res,next)=>{
     let token
@@ -110,7 +92,7 @@ if(req.body.relatives){
     
     for(let i = 0;i<req.body.relatives.length;i++){
         
-        const user = await User.findOne({username:req.body.relatives[i]})
+        const user = await User.findOneAndUpdate({username:req.body.relatives[i]},{$push:{relatives: newUser}})
         newUser.relatives.push(user)
     }
     await newUser.save()
@@ -156,8 +138,8 @@ exports.login = catchAsync(async (req,res,next)=>{
     if(!req.body.email  || !req.body.password){
       return  next(new AppError(`Please provide email and password`,400))
     }
-    const user = await  User.findOne({email: req.body.email}).select('+password') 
-   if(user && user.isVerfied === false){
+    const user = await  User.findOne({email: req.body.email}).select('+password +isActive')
+   if(user && user.isVerified === false){
     return next(new AppError(`This email isn't verified yet.`,401))
    }
    if(user && user.isActive === false){

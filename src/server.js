@@ -1,13 +1,6 @@
 const mongoose =  require('mongoose')
 const dotenv = require("dotenv");
 const User = require('./models/userModel')
-// const nodemailer = require('nodemailer')
-// const kue = require('kue');
-// const pug = require('pug')
-// const queue = kue.createQueue({redis: {
-//     port: 6379,
-//     host: 'redis'
-//   }});
 
 
 
