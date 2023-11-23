@@ -7,13 +7,13 @@ const s3 = new AWS.S3({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
   })
 
-exports.uploadFile = async (file)=>{
+exports.uploadFile = async (file,fileType)=>{
    
    await s3.upload({
         Body: Buffer.from(file.buffer),
         Bucket: process.env.AWS_S3_BUCKET_NAME,
         Key:file.filename,
-        ContentType: 'image/png', // Set the appropriate content type for your image
+        ContentType: fileType, // Set the appropriate content type for your image
     }).promise()
 
     await s3.putObjectAcl({
