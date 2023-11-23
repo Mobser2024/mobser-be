@@ -19,6 +19,9 @@ const userSchema = mongoose.Schema({
             message: `Username must have no spaces`
         },
     },
+    photo: {
+        type: String
+    },
     phoneNumber: {
         type: String,
         unique: [true, 'This phone number is already in use'],

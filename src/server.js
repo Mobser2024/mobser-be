@@ -1,12 +1,21 @@
 const mongoose =  require('mongoose')
 const dotenv = require("dotenv");
 const User = require('./models/userModel')
+// const AWS = require('aws-sdk')
+// const s3 = new AWS.S3()
 
-
+// const uploadFiles = async ()=>{
+//     await s3.putObject({
+//         Body: 'hello world',
+//         Bucket: 'mobser-files',
+//         Key:'hello-world.txt'
+//     }).promise()
+// }
+// uploadFiles()
 
 process.on('uncaughtException', err => {
     console.log('UNCAUGHT EXCEPTION  Shutting down...')
-    console.log(err.name,err.message)
+    console.log(err.name,err.message,err)
         process.exit(1)
 })
 
@@ -25,12 +34,12 @@ const app = require('./app');
 const port = process.env.PORT || 3000;   
 
 
-
 const server = app.listen(port,
     ()=>{
         console.log(`app is running on port : ${port}`)
         //console.log(Date.now())
     })
+ 
 
 server.on('close',async ()=>{
     console.log('server is closed')

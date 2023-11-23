@@ -1,9 +1,46 @@
+const multer = require('multer')
+const sharp = require('sharp')
 const User = require('../models/userModel')
 const AppError = require('../utils/appError')
 const catchAsync = require('../utils/catchAsync')
 const {promisify} = require('util')
 const jwt = require('jsonwebtoken')
 const { relative } = require('path')
+const s3 = require('../utils/s3')
+
+const multerStorage = multer.memoryStorage()
+const multerFilter = (req,file,cb) =>{
+    if(file.mimetype.startsWith('image')){
+        cb(null,true)
+    }else{
+       return cb(new AppError('Not an image! Please upload only images.',400))
+    }
+}
+
+const upload = multer({
+    storage: multerStorage,
+    fileFilter: multerFilter
+})
+
+exports.uploadUserPhoto = upload.single('photo')
+exports.uploadUserPhotoToS3 = catchAsync(async (req,res,next) => {
+    if(!req.file){
+        return next()
+    }
+    req.file.filename = `images/profiles/user-${req.user.id}-${Date.now()}.png`
+   
+  
+    req.file.buffer =  await sharp(req.file.buffer)
+    .resize(500,500).
+    toFormat('png')
+    .png({ quality: 90})
+    .toBuffer()
+    const result =  await s3.uploadFile(req.file)
+
+    console.log('the s3 result '+ result)
+    next()
+}
+)
 
 const filterObj = (obj,...allowedFields) =>{
     const newObj = {}
@@ -32,8 +69,10 @@ exports.updateMe = catchAsync(async (req,res,next) => {
         return next(new AppError(`This route isn't for update password or email. Please use /auth/update-password. or /auth/update-email`,400))
     }
 
-    const filteredBody = filterObj(req.body,'name','username','gender','phoneNumber','addressLocation')
-    
+    const filteredBody = filterObj(req.body,'name','username','gender','phoneNumber','addressLocation','photo')
+    if(req.file) {
+        filteredBody.photo = `${process.env.AWS_S3_BASE_URL}/${req.file.filename}`
+    }
  
     const updatedUser = await User.findByIdAndUpdate(req.user.id,filteredBody,{
         new:true,
@@ -56,7 +95,7 @@ exports.addRelativeUser = catchAsync(async (req,res,next)=>{
   for(let i = 0;i<req.body.relatives.length;i++){
     const relative = await User.findOne({username:req.body.relatives[i]}).select('+relatives')
     console.log(relative)
-    if(!user.relatives.includes(relative._id)){
+    if(relative && !user.relatives.includes(relative._id)){
     user.relatives.push(relative)
     relative.relatives.push(user)
     await relative.save()
