@@ -26,6 +26,7 @@ exports.sendMessage = async (data,io) => {
         from:currentUser._id,
         to: toUser._id,
         message: data.message,
+        messageType:data.messageType,
         createdAt: new Date(Date.now())
     })
     console.log(toUser)
@@ -37,6 +38,7 @@ exports.sendMessage = async (data,io) => {
 
     console.log(message)
 }catch(e){
+    console.log(e)
     return io.to(data.socketId).emit('error', 'Something went wrong');
 }
 
