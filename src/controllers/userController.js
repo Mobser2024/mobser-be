@@ -35,7 +35,7 @@ exports.uploadUserPhotoToS3 = catchAsync(async (req,res,next) => {
     toFormat('png')
     .png({ quality: 90})
     .toBuffer()
-    const result =  await s3.uploadFile(req.file)
+    const result =  await s3.uploadFile(req.file,'image/png')
 
     console.log('the s3 result '+ result)
     next()

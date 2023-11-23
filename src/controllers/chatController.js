@@ -58,17 +58,31 @@ exports.getMessages = catchAsync(async (req,res,next)=>{
 })
 const multerStorage = multer.memoryStorage()
 const multerFilter = (req,file,cb) =>{
+    console.log(file.mimetype)
     if(file.mimetype.startsWith('image')){
         cb(null,true)
     }else{
        return cb(new AppError('Not an image! Please upload only images.',400))
     }
 }
+const multerFilterForAudio = (req,file,cb) =>{
+    console.log(file.mimetype)
+    if(file.mimetype.startsWith('audio')){
+        cb(null,true)
+    }else{
+       return cb(new AppError('Not an audio! Please upload only images.',400))
+    }
+}
 const upload = multer({
     storage: multerStorage,
     fileFilter: multerFilter
 })
+const uploadForAudio =  multer({
+    storage: multerStorage,
+    fileFilter: multerFilterForAudio
+})
 exports.uploadPhoto = upload.single('photo')
+exports.uploadAudio = uploadForAudio.single('audio')
 exports.uploadPhotoToS3 = catchAsync(async (req,res,next) => {
     if(!req.file){
         return next(new AppError(`No image to upload`,400))
@@ -81,7 +95,30 @@ exports.uploadPhotoToS3 = catchAsync(async (req,res,next) => {
     toFormat('png')
     .png({ quality: 90})
     .toBuffer()
-    const result =  await s3.uploadFile(req.file)
+    const result =  await s3.uploadFile(req.file,'image/png')
+
+    console.log('the s3 result '+ result)
+    res.status(201).json({
+        status:"success",
+        data: {
+            url:result
+        }
+   })
+}
+)
+exports.uploadAudioToS3 = catchAsync(async (req,res,next) => {
+    if(!req.file){
+        return next(new AppError(`No audio to upload`,400))
+    }
+    req.file.filename = `audios/messages/message-${req.user.id}-${Date.now()}.mp3`
+   
+  
+    // req.file.buffer =  await sharp(req.file.buffer)
+    // .resize(500,500).
+    // toFormat('mp3')
+    // .mp3({ quality: 90})
+    // .toBuffer()
+    const result =  await s3.uploadFile(req.file,'audio/mpeg')
 
     console.log('the s3 result '+ result)
     res.status(201).json({
