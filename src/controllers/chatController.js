@@ -4,6 +4,11 @@ const jwt = require('jsonwebtoken')
 const catchAsync = require('../utils/catchAsync')
 const {promisify} = require('util')
 
+const s3 = require('../utils/s3')
+const multer = require('multer')
+const sharp = require('sharp')
+const AppError = require('../utils/appError')
+
 exports.sendMessage = async (data,io) => {
     try{
     console.log(data)
@@ -51,3 +56,40 @@ exports.getMessages = catchAsync(async (req,res,next)=>{
         }
    })
 })
+const multerStorage = multer.memoryStorage()
+const multerFilter = (req,file,cb) =>{
+    if(file.mimetype.startsWith('image')){
+        cb(null,true)
+    }else{
+       return cb(new AppError('Not an image! Please upload only images.',400))
+    }
+}
+const upload = multer({
+    storage: multerStorage,
+    fileFilter: multerFilter
+})
+exports.uploadPhoto = upload.single('photo')
+exports.uploadPhotoToS3 = catchAsync(async (req,res,next) => {
+    if(!req.file){
+        return next(new AppError(`No image to upload`,400))
+    }
+    req.file.filename = `images/messages/message-${req.user.id}-${Date.now()}.png`
+   
+  
+    req.file.buffer =  await sharp(req.file.buffer)
+    .resize(500,500).
+    toFormat('png')
+    .png({ quality: 90})
+    .toBuffer()
+    const result =  await s3.uploadFile(req.file)
+
+    console.log('the s3 result '+ result)
+    res.status(201).json({
+        status:"success",
+        data: {
+            url:result
+        }
+   })
+}
+)
+

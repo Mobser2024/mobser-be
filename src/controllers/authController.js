@@ -93,7 +93,9 @@ if(req.body.relatives){
     for(let i = 0;i<req.body.relatives.length;i++){
         
         const user = await User.findOneAndUpdate({username:req.body.relatives[i]},{$push:{relatives: newUser}})
+        if(user){
         newUser.relatives.push(user)
+        }
     }
     await newUser.save()
 }
