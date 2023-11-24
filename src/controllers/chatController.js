@@ -44,19 +44,44 @@ exports.sendMessage = async (data,io) => {
 
 }
 
-exports.getMessages = catchAsync(async (req,res,next)=>{
+// exports.getMessages = catchAsync(async (req,res,next)=>{
     
-    const conditionA = {$and:[{from:req.user.id},{to:req.params.userId}]}
-    const conditionB = {$and:[{to: req.user.id},{from:req.params.userId}]}
-    const messages = await Message.find({
-        $or: [conditionA,conditionB]
-    }).sort({ createdAt: -1 })
-    res.status(200).json({
-        status:"success",
-        data: {
-            messages
-        }
-   })
+//     const conditionA = {$and:[{from:req.user.id},{to:req.params.userId}]}
+//     const conditionB = {$and:[{to: req.user.id},{from:req.params.userId}]}
+//     const messages = await Message.find({
+//         $or: [conditionA,conditionB]
+//     }).sort({ createdAt: -1 })
+//     res.status(200).json({
+//         status:"success",
+//         data: {
+//             messages
+//         }
+//    })
+// })
+
+exports.getMessages = catchAsync(async (req,res,next)=>{
+    const { page = 1, limit = 20 } = req.query;
+
+    // Convert page and limit to numbers
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+
+    // Calculate skip value for pagination
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // Use the Mongoose model to find matching documents in the database with pagination
+      const conditionA = {$and:[{from:req.user.id},{to:req.params.userId}]}
+      const conditionB = {$and:[{to: req.user.id},{from:req.params.userId}]}
+      const messages = await Message.find({
+          $or: [conditionA,conditionB]
+      }).sort({ createdAt: -1 }).skip(skip)
+      .limit(limitNumber);
+      res.status(200).json({
+          status:"success",
+          data: {
+              messages
+          }
+     })
 })
 const multerStorage = multer.memoryStorage()
 const multerFilter = (req,file,cb) =>{
