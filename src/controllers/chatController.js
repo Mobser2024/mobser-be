@@ -3,6 +3,7 @@ const Message = require('../models/messageModel')
 const jwt = require('jsonwebtoken')
 const catchAsync = require('../utils/catchAsync')
 const {promisify} = require('util')
+const {sendNotification} = require('../utils/fcm')
 
 const s3 = require('../utils/s3')
 const multer = require('multer')
@@ -18,8 +19,10 @@ exports.sendMessage = async (data,io) => {
       
     }
    
-    const toUser = await User.findById(data.to).select('+socketId +socketStatus')
-   
+    const toUser = await User.findById(data.to).select('+socketId +socketStatus +fcmToken')
+    if(!toUser){
+        return io.to(data.socketId).emit('error','No user with this id')
+    }
 
     //TODO handle message data not in db
     const message = await Message.create({
@@ -32,10 +35,22 @@ exports.sendMessage = async (data,io) => {
     console.log(toUser)
     if(toUser.socketId && (toUser.socketStatus === 'chat' || toUser.socketStatus === 'chatAndMapTracking')){
         console.log('user is online')
-        io.to(toUser.socketId).emit('message', message);
-        
+        return io.to(toUser.socketId).emit('message', message);
     }
-
+    if(!toUser.fcmToken){
+        return io.to(data.socketId).emit('error','This user isn\'t logged in')
+    }
+    const fcmMessage = {
+        notification: {
+            title: `Message from ${currentUser.username}`,
+            body: message
+        },
+        data: {
+            userId: currentUser.id
+        },
+        token: toUser.fcmToken
+    }
+    sendNotification(fcmMessage)
     console.log(message)
 }catch(e){
     console.log(e)

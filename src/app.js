@@ -12,6 +12,7 @@ const compression = require('compression')
 const authRouter = require('./routes/authRoutes')
 const userRouter = require('./routes/userRoutes')
 const chatRouter = require('./routes/chatRoutes')
+const notificationRouter = require('./routes/notificationRoutes')
 const viewRouter = require('./routes/viewRoutes') 
 const errorHandler = require('./controllers/errorController')
 const chatController = require('./controllers/chatController')
@@ -108,6 +109,7 @@ app.use('/',viewRouter)
 app.use('/api/v1/auth/',authRouter)
 app.use('/api/v1/users/',userRouter)
 app.use('/api/v1/chats/',chatRouter)
+app.use('/api/v1/notifications/',notificationRouter)
 
 
 app.all('*',(req,res,next)=>{

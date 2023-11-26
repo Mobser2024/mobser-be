@@ -137,8 +137,8 @@ exports.verifyAccount = catchAsync(async (req,res,next) => {
 
 exports.login = catchAsync(async (req,res,next)=>{
     
-    if(!req.body.email  || !req.body.password){
-      return  next(new AppError(`Please provide email and password`,400))
+    if(!req.body.email  || !req.body.password || !req.body.fcmToken){
+      return  next(new AppError(`Please provide email and password and fcmToken`,400))
     }
     const user = await  User.findOne({email: req.body.email}).select('+password +isActive')
    if(user && user.isVerified === false){
@@ -150,6 +150,8 @@ exports.login = catchAsync(async (req,res,next)=>{
     if(!user || !(await user.isCorrectPassword(req.body.password,user.password))){
         return next(new AppError(`Invalid Credentials`,401))
     }
+    user.fcmToken = req.body.fcmToken
+    await user.save()
 
     createAndSendToken(user,200,res,false)
 })
