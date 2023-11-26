@@ -2,3 +2,4 @@
 Dockerfile
 config.env
 docker-compose*
+src/config/push-notification-key.json
