@@ -39,22 +39,27 @@ io.on('connection',(socket)=>{
 
 
     socket.on('sendMessage',(data)=> {
+        console.log(data)
         chatController.sendMessage({socketId:socket.id,...data},io)
     })
 
     socket.on('requestTracking',(data)=>{
+        console.log(data)
      mapController.requestTracking()
     })
 
     socket.on('changeMyPosition',(data)=> {
+        console.log(data)
         mapController.changePosititon(io,data,socket)
     })
 
     socket.on('rejectTracking',(data)=> {
+        console.log(data)
         mapController.rejectTracking(io,data)
     })
 
     socket.on('changeSocketStatus',(data)=> {
+        console.log(data)
         userController.changeSocketStatus(socket.id,data.socketStatus)
     })
 
