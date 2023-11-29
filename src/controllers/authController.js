@@ -137,7 +137,7 @@ exports.verifyAccount = catchAsync(async (req,res,next) => {
 
 exports.login = catchAsync(async (req,res,next)=>{
     
-    if(!req.body.email  || !req.body.password || !req.body.fcmToken){
+    if(!req.body.email  || !req.body.password /*|| !req.body.fcmToken*/){
       return  next(new AppError(`Please provide email and password and fcmToken`,400))
     }
     const user = await  User.findOne({email: req.body.email}).select('+password +isActive')
