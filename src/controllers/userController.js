@@ -90,6 +90,10 @@ exports.updateMe = catchAsync(async (req,res,next) => {
 
 })
 
+// exports.updaateMyLastActivity = async (socketId)=>{
+//      const user = await User.findOneAndUpdate({socketId},{lastActivity:new Date(Date.now())})
+// }
+
 exports.addRelativeUser = catchAsync(async (req,res,next)=>{
     const user = await User.findById(req.user.id).select('+relatives')
   for(let i = 0;i<req.body.relatives.length;i++){
@@ -158,10 +162,10 @@ exports.assignSocketIdToUser = async (token,socket,socketStatus)=> {
 
     const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET)
     const currentUser = await User.findById(decoded.id).select('+socketId')
-    if(currentUser.socketId){
-        socket.emit('error',`You have a socket. Please use this socket and not open another one!`)
-        return socket.disconnect()
-    }
+    // if(currentUser.socketId){
+    //     socket.emit('error',`You have a socket. Please use this socket and not open another one!`)
+    //     return socket.disconnect()
+    // }
     currentUser.socketId = socket.id
     currentUser.socketStatus = socketStatus
     await currentUser.save()

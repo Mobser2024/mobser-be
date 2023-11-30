@@ -95,6 +95,10 @@ const userSchema = mongoose.Schema({
         select: false,
         enum : ['chat','mapTracking','chatAndMapTracking'],
     },
+    lastActivity: {
+        type: Date,
+        select: false
+    },
     fcmToken: {
         type: String,
         select: false
