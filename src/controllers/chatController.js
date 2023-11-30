@@ -34,7 +34,7 @@ exports.sendMessage = async (data,io) => {
     })
     console.log(toUser)
     if(toUser.socketId && (toUser.socketStatus === 'chat' || toUser.socketStatus === 'chatAndMapTracking')){
-        console.log('user is online')
+        console.log('user is online') 
         return io.to(toUser.socketId).emit('message', message);
     }
     if(!toUser.fcmToken){
