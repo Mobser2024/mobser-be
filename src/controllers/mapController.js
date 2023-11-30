@@ -6,7 +6,7 @@ exports.requestTracking = async () =>{
 
 exports.changePosititon = async (io,data,socket) => {
     const toUser = await User.findById(data.to).select('+socketId +socketStatus')
-    if(toUser.socketId && (toUser.socketStatus === 'mapTracking' || toUser.socketStatus === 'chatAndMapTracking')){
+    if(toUser.socketId ){
         console.log('user is online')
        return io.to(toUser.socketId).emit('userPositionChanged', {long:data.long,lat:data.lat});
     }
