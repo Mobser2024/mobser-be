@@ -90,9 +90,9 @@ exports.updateMe = catchAsync(async (req,res,next) => {
 
 })
 
-// exports.updaateMyLastActivity = async (socketId)=>{
-//      const user = await User.findOneAndUpdate({socketId},{lastActivity:new Date(Date.now())})
-// }
+exports.updaateMyLastActivity = async (socketId)=>{
+     return await User.findOneAndUpdate({socketId},{lastActivity:new Date(Date.now())})
+}
 
 exports.addRelativeUser = catchAsync(async (req,res,next)=>{
     const user = await User.findById(req.user.id).select('+relatives')

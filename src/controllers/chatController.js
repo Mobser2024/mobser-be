@@ -33,7 +33,7 @@ exports.sendMessage = async (data,io) => {
         createdAt: new Date(Date.now())
     })
     console.log(toUser)
-    if(toUser.socketId && (toUser.socketStatus === 'chat' || toUser.socketStatus === 'chatAndMapTracking')){
+    if(toUser.socketId ){
         console.log('user is online') 
         return io.to(toUser.socketId).emit('message', message);
     }
