@@ -15,13 +15,12 @@ const chatRouter = require('./routes/chatRoutes')
 const notificationRouter = require('./routes/notificationRoutes')
 const viewRouter = require('./routes/viewRoutes') 
 const errorHandler = require('./controllers/errorController')
-const chatController = require('./controllers/chatController')
-const userController = require('./controllers/userController')
-const mapController = require('./controllers/mapController')
+const socketHandler = require('./utils/socketHandler')
 const AppError = require('./utils/appError')
 const { default: helmet } = require('helmet')
 
 const app = express()
+
 
 const server = http.createServer(app)
 
@@ -30,44 +29,8 @@ const io = socketio(server)
 
 app.use(cors())
 
-io.on('connection',(socket)=>{
-    //console.log(socket)
-    const token = socket.handshake.headers.authorization ? socket.handshake.headers.authorization.split(' ')[1]: null;
-   
-    userController.assignSocketIdToUser(token,socket)
-    console.log(`New websocket connection`)
 
-
-    socket.on('sendMessage',(data)=> {
-        console.log(data)
-        chatController.sendMessage({socketId:socket.id,...data},io)
-    })
-
-    socket.on('requestTracking',(data)=>{
-        console.log(data)
-     mapController.requestTracking()
-    })
-
-    socket.on('changeMyPosition',(data)=> {
-        console.log(data)
-        mapController.changePosititon(io,data,socket)
-    })
-
-    socket.on('rejectTracking',(data)=> {
-        console.log(data)
-        mapController.rejectTracking(io,data)
-    })
-
-    socket.on('changeSocketStatus',(data)=> {
-        console.log(data)
-        userController.changeSocketStatus(socket.id,data.socketStatus)
-    })
-
-    socket.on('disconnect', () => {
-        console.log('disconnected')
-        userController.removeSocketId(socket.id)
-      });
-})
+socketHandler(io)
 
 // app.set('trust proxy', true);
 

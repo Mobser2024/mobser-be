@@ -154,23 +154,17 @@ exports.checkUsername = catchAsync(async (req,res,next) => {
 exports.assignSocketIdToUser = async (token,socket,socketStatus)=> {
     try{
     if(!token){
-       // io.to(socket.id).emit('error',`You are not logged in!`)
        socket.emit('error',`You are not logged in!`)
         return socket.disconnect()
         
     }
 
     const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET)
-    const currentUser = await User.findById(decoded.id).select('+socketId')
-    // if(currentUser.socketId){
-    //     socket.emit('error',`You have a socket. Please use this socket and not open another one!`)
-    //     return socket.disconnect()
-    // }
-    currentUser.socketId = socket.id
-    currentUser.socketStatus = socketStatus
-    await currentUser.save()
-
-   // const currentUser = await User.findByIdAndUpdate(decoded.id,{socketId:socket.id,socketStatus})
+    if(socketStatus === 'chat'){
+    await User.findByIdAndUpdate(decoded.id,{chatSocketId:socket.id})
+    }else if(socketStatus === 'mapTracking'){
+     await User.findByIdAndUpdate(decoded.id,{mapTrackingSocketId:socket.id})
+    }
 }catch(e){
     console.log(e)
     socket.emit('error',`Something went wrong`)
@@ -179,10 +173,12 @@ exports.assignSocketIdToUser = async (token,socket,socketStatus)=> {
 
 }
 
-exports.changeSocketStatus = async (socketId,socketStatus) => {
-   const user = await User.findOneAndUpdate({socketId},{socketStatus},{new:true})
-}
 
-exports.removeSocketId = async (socketId) => {
-    const user = await User.findOneAndUpdate({socketId},{$unset : {socketId:"",socketStatus:""}},{new:true})
+
+exports.removeSocketId = async (socketId,socketStatus) => {
+    if(socketStatus === 'chat'){
+    const user = await User.findOneAndUpdate({chatSocketId:socketId},{$unset : {chatSocketId:""}},{new:true})
+    }else if(socketStatus === 'mapTracking'){
+    const user = await User.findOneAndUpdate({mapTrackingSocketId:socketId},{$unset : {mapTrackingSocketId:""}},{new:true})
+    }
 }
