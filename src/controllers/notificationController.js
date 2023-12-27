@@ -22,7 +22,8 @@ exports.sendRequestTrackingNotification = catchAsync(async (req,res,next)=>{
             body: `Your relative ${req.user.username} wants to track you.`
         },
         data: {
-            userId: req.user.id
+            userId: req.user.id,
+            notificationType: "tracking"
         },
         token: notifiedUser.fcmToken
     }
