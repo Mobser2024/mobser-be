@@ -13,15 +13,15 @@ const AppError = require('../utils/appError')
 exports.sendMessage = async (data,io) => {
     try{
     console.log(data)
-    const currentUser = await User.findOne({socketId: data.socketId}).select('+isActive')
+    const currentUser = await User.findOne({chatSocketId: data.chatSocketId}).select('+isActive')
     if(!currentUser || !currentUser.isActive){
-        return io.to(data.socketId).emit('error', 'The User belongs to this token does no longer exist.');
+        return io.to(data.chatSocketId).emit('error', 'The User belongs to this token does no longer exist.');
       
     }
    
-    const toUser = await User.findById(data.to).select('+socketId +socketStatus +fcmToken')
+    const toUser = await User.findById(data.to).select('+chatSocketId +socketStatus +fcmToken')
     if(!toUser){
-        return io.to(data.socketId).emit('error','No user with this id')
+        return io.to(data.chatSocketId).emit('error','No user with this id')
     }
 
     //TODO handle message data not in db
@@ -33,12 +33,12 @@ exports.sendMessage = async (data,io) => {
         createdAt: new Date(Date.now())
     })
     console.log(toUser)
-    if(toUser.socketId ){
+    if(toUser.chatSocketId ){
         console.log('user is online') 
-        return io.to(toUser.socketId).emit('message', message);
+        return io.to(toUser.chatSocketId).emit('message', message);
     }
     if(!toUser.fcmToken){
-        return io.to(data.socketId).emit('error','This user isn\'t logged in')
+        return io.to(data.chatSocketId).emit('error','This user isn\'t logged in')
     }
     const fcmMessage = {
         notification: {
@@ -54,7 +54,7 @@ exports.sendMessage = async (data,io) => {
     console.log(message)
 }catch(e){
     console.log(e)
-    return io.to(data.socketId).emit('error', 'Something went wrong');
+    return io.to(data.chatSocketId).emit('error', 'Something went wrong');
 }
 
 }

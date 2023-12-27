@@ -1,17 +1,6 @@
 const mongoose =  require('mongoose')
 const dotenv = require("dotenv");
 const User = require('./models/userModel')
-// const AWS = require('aws-sdk')
-// const s3 = new AWS.S3()
-
-// const uploadFiles = async ()=>{
-//     await s3.putObject({
-//         Body: 'hello world',
-//         Bucket: 'mobser-files',
-//         Key:'hello-world.txt'
-//     }).promise()
-// }
-// uploadFiles()
 
 process.on('uncaughtException', err => {
     console.log('UNCAUGHT EXCEPTION  Shutting down...')
@@ -43,7 +32,7 @@ const server = app.listen(port,
 
 server.on('close',async ()=>{
     console.log('server is closed')
-   await User.updateMany({},{$unset : {socketId:"",socketStatus:""}})
+   await User.updateMany({},{$unset : {chatSocketId:"",mapTrackingSocketId:""}})
 })
 
 process.on('unhandledRejection', err => {

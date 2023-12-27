@@ -86,14 +86,13 @@ const userSchema = mongoose.Schema({
         default: true,
         select: false
     },
-    socketId: {
+    chatSocketId: {
         type: String,
         select: false
     },
-    socketStatus: {
+    mapTrackingSocketId: {
         type: String,
-        select: false,
-        enum : ['chat','mapTracking','chatAndMapTracking'],
+        select: false
     },
     lastActivity: {
         type: Date,
