@@ -101,6 +101,7 @@ exports.getMessages = catchAsync(async (req,res,next)=>{
 const multerStorage = multer.memoryStorage()
 const multerFilter = (req,file,cb) =>{
     console.log(file.mimetype)
+    
     if(file.mimetype.startsWith('image')){
         cb(null,true)
     }else{

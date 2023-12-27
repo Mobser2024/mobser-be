@@ -137,7 +137,7 @@ exports.verifyAccount = catchAsync(async (req,res,next) => {
 
 exports.login = catchAsync(async (req,res,next)=>{
     
-    if(!req.body.email  || !req.body.password /*|| !req.body.fcmToken*/){
+    if(!req.body.email  || !req.body.password || !req.body.fcmToken){
       return  next(new AppError(`Please provide email and password and fcmToken`,400))
     }
     const user = await  User.findOne({email: req.body.email}).select('+password +isActive')
@@ -154,6 +154,14 @@ exports.login = catchAsync(async (req,res,next)=>{
     await user.save()
 
     createAndSendToken(user,200,res,false)
+})
+
+exports.logout = catchAsync(async (req,res,next)=>{
+    const user = await User.findByIdAndUpdate(req.user.id,{$unset : {fcmToken:""}},{new:true})
+    res.status(200).json({
+        status: "success",
+        message: "The user logged out successfully."
+    })
 })
 
 exports.forgotPassword = catchAsync(async(req,res,next)=>{
