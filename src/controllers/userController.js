@@ -161,9 +161,9 @@ exports.assignSocketIdToUser = async (token,socket,socketStatus)=> {
 
     const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET)
     if(socketStatus === 'chat'){
-    await User.findByIdAndUpdate(decoded.id,{chatSocketId:socket.id})
+    return await User.findByIdAndUpdate(decoded.id,{chatSocketId:socket.id},{new:true})
     }else if(socketStatus === 'mapTracking'){
-     await User.findByIdAndUpdate(decoded.id,{mapTrackingSocketId:socket.id})
+    return await User.findByIdAndUpdate(decoded.id,{mapTrackingSocketId:socket.id},{new:true})
     }
 }catch(e){
     console.log(e)

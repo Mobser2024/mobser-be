@@ -2,13 +2,13 @@ const chatController = require('../controllers/chatController')
 const userController = require('../controllers/userController')
 const mapController = require('../controllers/mapController')
 
-const socketHandler = (io)=>{
-io.on('connection',(socket)=>{
+const socketHandler =  (io)=>{
+io.on('connection',async (socket)=>{
     console.log(socket.handshake.query.socketStatus)
 
     const token = socket.handshake.headers.authorization ? socket.handshake.headers.authorization.split(' ')[1]: null;
    
-    userController.assignSocketIdToUser(token,socket,socket.handshake.query.socketStatus)
+    const currentUser = await userController.assignSocketIdToUser(token,socket,socket.handshake.query.socketStatus)
     console.log(`New websocket connection`)
 
      if(socket.handshake.query.socketStatus === 'chat'){
@@ -17,9 +17,11 @@ io.on('connection',(socket)=>{
         chatController.sendMessage({chatSocketId:socket.id,...data},io)
     })
 } else if(socket.handshake.query.socketStatus === 'mapTracking'){
+    let isFirstTime = true
     socket.on('changeMyPosition',(data)=> {
         console.log(data)
-        mapController.changePosititon(io,data,socket)
+        mapController.changePosititon(io,data,socket,isFirstTime,currentUser)
+        isFirstTime = false
     })
 }
 
