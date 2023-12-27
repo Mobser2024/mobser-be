@@ -43,7 +43,7 @@ exports.sendMessage = async (data,io) => {
     const fcmMessage = {
         notification: {
             title: `Message from ${currentUser.username}`,
-            body: message
+            body: message.message
         },
         data: {
             userId: currentUser.id
@@ -101,7 +101,7 @@ exports.getMessages = catchAsync(async (req,res,next)=>{
 const multerStorage = multer.memoryStorage()
 const multerFilter = (req,file,cb) =>{
     console.log(file.mimetype)
-    
+
     if(file.mimetype.startsWith('image')){
         cb(null,true)
     }else{
