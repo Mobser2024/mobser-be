@@ -8,6 +8,9 @@ exports.sendRequestTrackingNotification = catchAsync(async (req,res,next)=>{
     if(!req.body.userId){
         return next(new AppError('Please provide userId',400))
     }
+    if(!req.user.relatives.includes(req.body.userId)){
+        return next(new AppError('This user isn\'t your relative',400))
+    }
     const notifiedUser = await User.findById(req.body.userId).select('+fcmToken')
     console.log(notifiedUser)
     if(!notifiedUser){

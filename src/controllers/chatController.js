@@ -10,15 +10,17 @@ const multer = require('multer')
 const sharp = require('sharp')
 const AppError = require('../utils/appError')
 
-exports.sendMessage = async (data,io) => {
+exports.sendMessage = async (data,io,currentUser) => {
     try{
     console.log(data)
-    const currentUser = await User.findOne({chatSocketId: data.chatSocketId}).select('+isActive')
+    // const currentUser = await User.findOne({chatSocketId: data.chatSocketId}).select('+isActive')
     if(!currentUser || !currentUser.isActive){
         return io.to(data.chatSocketId).emit('error', 'The User belongs to this token does no longer exist.');
       
     }
-   
+    if(!currentUser.relatives.includes(data.to)){
+        return io.to(data.chatSocketId).emit('error','This user isn\'t your relative')
+    }
     const toUser = await User.findById(data.to).select('+chatSocketId +socketStatus +fcmToken')
     if(!toUser){
         return io.to(data.chatSocketId).emit('error','No user with this id')
