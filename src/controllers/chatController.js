@@ -14,7 +14,7 @@ exports.sendMessage = async (data,io,currentUser) => {
     try{
     console.log(data)
     // const currentUser = await User.findOne({chatSocketId: data.chatSocketId}).select('+isActive')
-    if(!currentUser || !currentUser.isActive){
+    if(!currentUser){
         return io.to(data.chatSocketId).emit('error', 'The User belongs to this token does no longer exist.');
       
     }
@@ -28,6 +28,7 @@ exports.sendMessage = async (data,io,currentUser) => {
 
     //TODO handle message data not in db
     currentUser.relatives = undefined
+    // currentUser.isActive = undefined
     const message = await Message.create({
         from:currentUser._id,
         to: toUser._id,
@@ -49,9 +50,9 @@ exports.sendMessage = async (data,io,currentUser) => {
             body: message.message
         },
         data: {
-            id: req.user.id,
-            username: req.user.username,
-            name: req.user.name,
+            id: currentUser.id,
+            username: currentUser.username,
+            name: currentUser.name,
             notificationType: "chat"
         },
         token: toUser.fcmToken
