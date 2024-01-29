@@ -55,6 +55,7 @@ const filterObj = (obj,...allowedFields) =>{
 
 exports.getMe = catchAsync(async (req,res,next)=>{
     req.user.isActive = undefined
+    req.user.relatives = undefined
     res.status(200).json({
         status:"success",
         data: {
@@ -153,17 +154,24 @@ exports.checkUsername = catchAsync(async (req,res,next) => {
 
 exports.assignSocketIdToUser = async (token,socket,socketStatus)=> {
     try{
+        //TODO check if the user is acttive
     if(!token){
        socket.emit('error',`You are not logged in!`)
         return socket.disconnect()
-        
     }
+    if(!socketStatus){
+        socket.emit('error',`You must assign status for this socket`)
+        return socket.disconnect()
+     }
 
     const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET)
     if(socketStatus === 'chat'){
-    return await User.findByIdAndUpdate(decoded.id,{chatSocketId:socket.id},{new:true})
+        return await User.findByIdAndUpdate(decoded.id,{chatSocketId:socket.id},{new:true}).select('+relatives')
     }else if(socketStatus === 'mapTracking'){
-    return await User.findByIdAndUpdate(decoded.id,{mapTrackingSocketId:socket.id},{new:true})
+         return await User.findByIdAndUpdate(decoded.id,{mapTrackingSocketId:socket.id},{new:true}).select('+relatives')
+    }else{
+        socket.emit('error',`You must assign valid status for this socket`)
+        return socket.disconnect()
     }
 }catch(e){
     console.log(e)

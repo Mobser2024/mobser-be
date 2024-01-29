@@ -3,6 +3,7 @@ const {sendNotification} = require('../utils/fcm')
 
 
 exports.changePosititon = async (io,data,socket,isFirstTime,currentUser) => {
+    
     const toUser = await User.findById(data.to).select('+mapTrackingSocketId +fcmToken')
     if(isFirstTime){
         const fcmMessage = {
