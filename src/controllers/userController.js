@@ -154,6 +154,7 @@ exports.checkUsername = catchAsync(async (req,res,next) => {
 
 exports.assignSocketIdToUser = async (token,socket,socketStatus)=> {
     try{
+        //TODO check if the user is acttive
     if(!token){
        socket.emit('error',`You are not logged in!`)
         return socket.disconnect()

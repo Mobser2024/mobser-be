@@ -27,6 +27,7 @@ exports.sendMessage = async (data,io,currentUser) => {
     }
 
     //TODO handle message data not in db
+    currentUser.relatives = undefined
     const message = await Message.create({
         from:currentUser._id,
         to: toUser._id,
@@ -44,11 +45,14 @@ exports.sendMessage = async (data,io,currentUser) => {
     }
     const fcmMessage = {
         notification: {
-            title: `Message from ${currentUser.username}`,
+            title: `Message from ${currentUser.name}`,
             body: message.message
         },
         data: {
-            userId: currentUser.id
+            id: req.user.id,
+            username: req.user.username,
+            name: req.user.name,
+            notificationType: "chat"
         },
         token: toUser.fcmToken
     }
