@@ -22,10 +22,6 @@ io.on('connection',async (socket)=>{
     })
 }
 
-    // socket.on('changeSocketStatus',(data)=> {
-    //     console.log(data)
-    //     userController.changeSocketStatus(socket.id,data.socketStatus)
-    // })
 
     socket.on('disconnect', () => {
         console.log('disconnected')
