@@ -8,20 +8,23 @@ exports.changePosititon = async (io,data,socket,isFirstTime,currentUser) => {
     if(isFirstTime){
         const fcmMessage = {
             notification: {
-                title: `${currentUser.username} Accepted Your Request Tracking`
+                title: `${currentUser.username} Accepted Your Request Tracking`,
+                body: `Your relative ${currentUser.name} accepted your tracking request`
             },
             data: {
-                id: req.user.id,
-                username: req.user.username,
-                name: req.user.name,
+                id: currentUser.id,
+                username: currentUser.username,
+                name: currentUser.name,
                 notificationType: "tracking",
                 long:`${data.long}`,
                 lat:`${data.lat}`
             },
-            token: toUser.fcmToken
+            token: toUser.fcmToken 
         }
-       return sendNotification(fcmMessage)
+        sendNotification(fcmMessage)
+       return 
     }
+    console.log(toUser)
     if(toUser.mapTrackingSocketId ){
         console.log('user is online')
        return io.to(toUser.mapTrackingSocketId).emit('userPositionChanged', {long:data.long,lat:data.lat});

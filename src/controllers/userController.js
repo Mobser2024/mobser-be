@@ -168,7 +168,9 @@ exports.assignSocketIdToUser = async (token,socket,socketStatus)=> {
     if(socketStatus === 'chat'){
         return  await User.findByIdAndUpdate(decoded.id,{chatSocketId:socket.id},{new:true}).select('+relatives')
     }else if(socketStatus === 'mapTracking'){
-         return await User.findByIdAndUpdate(decoded.id,{mapTrackingSocketId:socket.id},{new:true}).select('+relatives')
+         const user =  await User.findByIdAndUpdate(decoded.id,{mapTrackingSocketId:socket.id},{new:true}).select('+relatives +mapTrackingSocketId')
+         console.log(user)
+         return user
     }else{
         socket.emit('error',`You must assign valid status for this socket`)
         return socket.disconnect()
