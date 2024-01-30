@@ -27,7 +27,7 @@ exports.sendMessage = async (data,io,currentUser) => {
     }
 
     //TODO handle message data not in db
-    currentUser.relatives = undefined
+    // currentUser.relatives = undefined
     // currentUser.isActive = undefined
     const message = await Message.create({
         from:currentUser._id,
