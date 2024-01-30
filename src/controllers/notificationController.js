@@ -50,8 +50,6 @@ exports.acceptTrackingNotification = catchAsync(async (req,res,next)=>{
     if(!notifiedUser.fcmToken){
         return next(new AppError('This user isn\'t logged in',400))
     }
-    req.user.isActive = undefined
-    req.user.relatives = undefined
     const message = {
         notification: {
             title: 'Accept Tracking',
