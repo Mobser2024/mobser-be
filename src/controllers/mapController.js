@@ -11,7 +11,9 @@ exports.changePosititon = async (io,data,socket,isFirstTime,currentUser) => {
                 title: `${currentUser.username} Accepted Your Request Tracking`
             },
             data: {
-                userId: currentUser.id,
+                id: req.user.id,
+                username: req.user.username,
+                name: req.user.name,
                 notificationType: "tracking",
                 long:`${data.long}`,
                 lat:`${data.lat}`
