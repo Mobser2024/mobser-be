@@ -91,9 +91,7 @@ exports.updateMe = catchAsync(async (req,res,next) => {
 
 })
 
-exports.updaateMyLastActivity = async (socketId)=>{
-     return await User.findOneAndUpdate({socketId},{lastActivity:new Date(Date.now())})
-}
+
 
 exports.addRelativeUser = catchAsync(async (req,res,next)=>{
     const user = await User.findById(req.user.id).select('+relatives')
@@ -170,8 +168,13 @@ exports.assignSocketIdToUser = async (token,socket,socketStatus)=> {
     }else if(socketStatus === 'mapTracking'){
          const user =  await User.findByIdAndUpdate(decoded.id,{mapTrackingSocketId:socket.id},{new:true}).select('+relatives +mapTrackingSocketId')
          console.log(user)
-         return user
-    }else{
+         return user 
+    }else if(socketStatus === 'deviceSocket'){
+        const user =  await User.findByIdAndUpdate(decoded.id,{deviceSocketId:socket.id},{new:true}).select('+relatives +deviceSocketId +notifications')
+        console.log(user)
+        return user 
+   }
+    else{
         socket.emit('error',`You must assign valid status for this socket`)
         return socket.disconnect()
     }
