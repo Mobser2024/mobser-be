@@ -1,4 +1,5 @@
 const User = require('../models/userModel')
+const Device = require('../models/deviceModel')
 const catchAsync = require('../utils/catchAsync')
 const jwt = require('jsonwebtoken')
 const AppError = require('../utils/appError')
@@ -152,6 +153,29 @@ exports.login = catchAsync(async (req,res,next)=>{
     }
     user.fcmToken = req.body.fcmToken
     await user.save()
+
+    createAndSendToken(user,200,res,false)
+})
+
+exports.deviceLogin = catchAsync(async (req,res,next)=>{
+    
+    if(!req.body.serialNumber){
+      return  next(new AppError(`Please provide serialNumber`,400))
+    }
+    const device = await Device.findOne({serialNumber: req.body.serialNumber})
+    if(!device){
+        return next(new AppError(`There's no device with his serial number`,404))
+       }
+   const user = await User.findOne({device:device.id})
+   if(user && user.isVerified === false){
+    return next(new AppError(`This email isn't verified yet.`,401))
+   }
+   if(user && user.isActive === false){
+    return next(new AppError(`The User belongs to this email does no longer exist.`,401))
+   }
+    if(!user){
+        return next(new AppError(`This device isn't assigned to user yet.`,401))
+    }
 
     createAndSendToken(user,200,res,false)
 })

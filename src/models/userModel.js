@@ -54,6 +54,22 @@ const userSchema = mongoose.Schema({
     }],
     select: false
     },
+    notifications: {
+        type: [{
+            notification: {
+                title: String,
+                body: String,
+            },
+            data: {
+                id: String,
+                username: String,
+                name: String,
+                notificationType: String
+            }
+        
+    }],
+    select: false
+    },
     gender: {
         type: String,
         required: [true, 'The user must have a gender'],
@@ -94,14 +110,20 @@ const userSchema = mongoose.Schema({
         type: String,
         select: false
     },
-    lastActivity: {
-        type: Date,
+    deviceSocketId: {
+        type: String,
         select: false
     },
     fcmToken: {
         type: String,
+        unique: [true, 'This fcm token is already in use'],
+        select: false 
+    },
+    device: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'Device',
         select: false
-    }
+   },
 })
 
 userSchema.pre('save',async function(next){

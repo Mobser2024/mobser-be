@@ -11,15 +11,7 @@ exports.sendRequestTrackingNotification = catchAsync(async (req,res,next)=>{
     if(!req.user.relatives.includes(req.body.userId)){
         return next(new AppError('This user isn\'t your relative',400))
     }
-    const notifiedUser = await User.findById(req.body.userId).select('+fcmToken')
-    console.log(notifiedUser)
-    if(!notifiedUser){
-        return next(new AppError('No user with this id',400))
-    }
-    if(!notifiedUser.fcmToken){
-        return next(new AppError('This user isn\'t logged in',400))
-    }
-    const message = {
+    let message = {
         notification: {
             title: 'Request Tracking',
             body: `Your relative ${req.user.name} wants to track you.`
@@ -30,9 +22,24 @@ exports.sendRequestTrackingNotification = catchAsync(async (req,res,next)=>{
             name: req.user.name,
             notificationType: "tracking"
         },
-        token: notifiedUser.fcmToken
     }
+    const notifiedUser = await User.findByIdAndUpdate(req.body.userId,
+        { $push: { notifications: message } },
+        { new: true, useFindAndModify: false ,runValidators:true}).select('+fcmToken')
+    console.log(notifiedUser)
+    
+    if(!notifiedUser){
+        return next(new AppError('No user with this id',400))
+    }
+    
+     
+    if(!notifiedUser.fcmToken){
+        return next(new AppError('This user isn\'t logged in',400))
+    }
+   message.token = notifiedUser.fcmToken
+    
     sendNotification(message)
+
     res.status(200).json({
         status:"success",
         message: 'Request tracking notification sent.'
