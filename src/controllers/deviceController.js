@@ -8,7 +8,7 @@ const s3 = require('../utils/s3')
 exports.createDevice = catchAsync(async (req,res,next) => {
    
     const newDevice = await Device.create({
-        serialNumber: req.body.serialNumber
+        macAddress: req.body.macAddress
     })
     const options = {
         errorCorrectionLevel: 'H', // High error correction level
@@ -21,10 +21,10 @@ exports.createDevice = catchAsync(async (req,res,next) => {
         }
       };
 
-      const deviceToken = jwt.sign({id:newDevice.id},process.env.JWT_QR_CODE_SECRET)
-      const base64EncodedToken = Buffer.from(deviceToken).toString('base64');
+      // const deviceToken = jwt.sign({id:newDevice.id},process.env.JWT_QR_CODE_SECRET)
+      // const base64EncodedToken = Buffer.from(deviceToken).toString('base64');
       let file
-      await qr.toBuffer(base64EncodedToken, options,  async (err, buffer) => {
+      await qr.toBuffer(req.body.macAddress, options,  async (err, buffer) => {
         // if (err) {
         //     return next(new AppError('You are not logged in!',401))
         // };

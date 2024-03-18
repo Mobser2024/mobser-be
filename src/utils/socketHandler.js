@@ -20,19 +20,6 @@ io.on('connection',async (socket)=>{
         mapController.changePosititon(io,data,socket,isFirstTime,currentUser)
         isFirstTime = false
     })
-}else if(socket.handshake.query.socketStatus === 'deviceSocket'){
-    
-    socket.on('personalAssistant',(data)=>{
-        console.log('entered')
-        console.log(data)
-        //for test
-        if(data.text === "read notifications"){
-            console.log('read notifications')
-        socket.emit('personalAssistantResponse',
-            currentUser.notifications
-        )
-        }
-    })
 }
 
 

@@ -14,6 +14,7 @@ const userRouter = require('./routes/userRoutes')
 const chatRouter = require('./routes/chatRoutes')
 const deviceRouter = require('./routes/deviceRoutes')
 const notificationRouter = require('./routes/notificationRoutes')
+const userImagesRouter = require('./routes/userImagesRoutes')
 const viewRouter = require('./routes/viewRoutes') 
 const errorHandler = require('./controllers/errorController')
 const socketHandler = require('./utils/socketHandler')
@@ -80,6 +81,7 @@ app.use('/api/v1/users/',userRouter)
 app.use('/api/v1/chats/',chatRouter)
 app.use('/api/v1/devices/',deviceRouter)
 app.use('/api/v1/notifications/',notificationRouter)
+app.use('/api/v1/user-images/',userImagesRouter)
 
 
 app.all('*',(req,res,next)=>{

@@ -47,7 +47,7 @@ exports.sendMessage = async (data,io,currentUser) => {
     const fcmMessage = {
         notification: {
             title: `Message from ${currentUser.name}`,
-            body: message.message
+            body: message.type === "audio" ? "Audio" : message.type === "image" ? "Image" : message.message
         },
         data: {
             id: currentUser.id,
@@ -134,6 +134,7 @@ const uploadForAudio =  multer({
 exports.uploadPhoto = upload.single('photo')
 exports.uploadAudio = uploadForAudio.single('audio')
 exports.uploadPhotoToS3 = catchAsync(async (req,res,next) => {
+    console.log(req.file)
     if(!req.file){
         return next(new AppError(`No image to upload`,400))
     }

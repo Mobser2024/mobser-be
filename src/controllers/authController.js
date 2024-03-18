@@ -80,6 +80,14 @@ exports.signup = catchAsync(async (req,res,next)=>{
     if(req.body.userType == 'relative' && !req.body.relatives){
         return next(new AppError('relative must have a regular user as relative at least',400))
     }
+    if(req.body.userType == 'user' && !req.body.macAddress){
+        return next(new AppError('user must have a device',400))
+    }
+    
+        // const decodedtoken = Buffer.from(req.body.macAddress, 'base64').toString();
+        // const decoded = await promisify(jwt.verify)(decodedtoken,process.env.JWT_QR_CODE_SECRET)
+       const deviceId = await Device.findOne({macAddress:req.body.macAddress}).id
+    
     const newUser = await User.create({
         name: req.body.name,
         username: req.body.username,
@@ -88,6 +96,7 @@ exports.signup = catchAsync(async (req,res,next)=>{
         gender: req.body.gender,
         email: req.body.email ,
         password: req.body.password,
+        device: deviceId
     })
 if(req.body.relatives){
     
@@ -159,10 +168,10 @@ exports.login = catchAsync(async (req,res,next)=>{
 
 exports.deviceLogin = catchAsync(async (req,res,next)=>{
     
-    if(!req.body.serialNumber){
-      return  next(new AppError(`Please provide serialNumber`,400))
+    if(!req.body.macAddress){
+      return  next(new AppError(`Please provide macAddress`,400))
     }
-    const device = await Device.findOne({serialNumber: req.body.serialNumber})
+    const device = await Device.findOne({macAddress: req.body.macAddress})
     if(!device){
         return next(new AppError(`There's no device with his serial number`,404))
        }

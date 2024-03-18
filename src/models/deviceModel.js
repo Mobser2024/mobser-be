@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 
 const deviceSchema = mongoose.Schema({
-   serialNumber: {
+   macAddress: {
     type: String,
     required: [true,`You must provide a serial number`],
     unique: [true, 'This serial number is already in use'],
