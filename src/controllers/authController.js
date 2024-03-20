@@ -77,6 +77,7 @@ exports.protect = catchAsync(async (req,res,next)=>{
 })
 
 exports.signup = catchAsync(async (req,res,next)=>{
+    req.body.email = req.body.email.toLowerCase()
     if(req.body.userType == 'relative' && !req.body.relatives){
         return next(new AppError('relative must have a regular user as relative at least',400))
     }
@@ -150,6 +151,8 @@ exports.login = catchAsync(async (req,res,next)=>{
     if(!req.body.email  || !req.body.password || !req.body.fcmToken){
       return  next(new AppError(`Please provide email and password and fcmToken`,400))
     }
+    req.body.email = req.body.email.toLowerCase()
+    
     const user = await  User.findOne({email: req.body.email}).select('+password +isActive')
    if(user && user.isVerified === false){
     return next(new AppError(`This email isn't verified yet.`,401))
@@ -198,6 +201,7 @@ exports.logout = catchAsync(async (req,res,next)=>{
 })
 
 exports.forgotPassword = catchAsync(async(req,res,next)=>{
+    req.body.email = req.body.email.toLowerCase()
     const user = await User.findOne({email:req.body.email})
     if(!user){
         return next(new AppError(`There's no user with this email`,404))
@@ -245,7 +249,7 @@ exports.updateEmail = catchAsync(async (req,res,next)=>{
     const user = await User.findById(req.user.id)
    
 
-    user.email = req.body.email
+    user.email = req.body.email.toLowerCase()
    // user.isVerified = false
 
     await user.save()
