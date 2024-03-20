@@ -7,9 +7,12 @@ const certPath = admin.credential.cert(serviceAccount)
 const FCM = new fcm(certPath)
 
 exports.sendNotification = (message)=>{
+    try{
     FCM.send(message, function(err,response){
         if(err){
-           throw err
+            console.log(err)
+        //    throw err
         }
     })
+}catch(e){}
 }

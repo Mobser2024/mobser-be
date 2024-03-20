@@ -36,7 +36,6 @@ exports.sendMessage = async (data,io,currentUser) => {
         messageType:data.messageType,
         createdAt: new Date(Date.now())
     })
-    console.log(toUser)
     if(toUser.chatSocketId ){
         console.log('user is online') 
         return io.to(toUser.chatSocketId).emit('message', message);
@@ -58,7 +57,6 @@ exports.sendMessage = async (data,io,currentUser) => {
         token: toUser.fcmToken
     }
     sendNotification(fcmMessage)
-    console.log(message)
 }catch(e){
     console.log(e)
     return io.to(data.chatSocketId).emit('error', 'Something went wrong');
