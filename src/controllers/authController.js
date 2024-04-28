@@ -75,19 +75,20 @@ exports.protect = catchAsync(async (req,res,next)=>{
     req.user = currentUser
     next()
 })
-
+ 
 exports.signup = catchAsync(async (req,res,next)=>{
     req.body.email = req.body.email.toLowerCase()
     if(req.body.userType == 'relative' && !req.body.relatives){
         return next(new AppError('relative must have a regular user as relative at least',400))
     }
-    if(req.body.userType == 'user' && !req.body.macAddress){
-        return next(new AppError('user must have a device',400))
-    }
+    // if(req.body.userType == 'user' && !req.body.macAddress){
+    //     return next(new AppError('user must have a device',400))
+    // }
     
         // const decodedtoken = Buffer.from(req.body.macAddress, 'base64').toString();
         // const decoded = await promisify(jwt.verify)(decodedtoken,process.env.JWT_QR_CODE_SECRET)
-       const deviceId = await Device.findOne({macAddress:req.body.macAddress}).id
+       const device = await Device.findOne({macAddress:req.body.macAddress})
+       
     
     const newUser = await User.create({
         name: req.body.name,
@@ -97,7 +98,7 @@ exports.signup = catchAsync(async (req,res,next)=>{
         gender: req.body.gender,
         email: req.body.email ,
         password: req.body.password,
-        device: deviceId
+        device: device._id
     })
 if(req.body.relatives){
     
@@ -154,13 +155,16 @@ exports.login = catchAsync(async (req,res,next)=>{
     req.body.email = req.body.email.toLowerCase()
     
     const user = await  User.findOne({email: req.body.email}).select('+password +isActive')
-   if(user && user.isVerified === false){
+    if(!user){
+        return next(new AppError(`Invalid Credentials`,401))
+    }
+   if(user.isVerified === false){
     return next(new AppError(`This email isn't verified yet.`,401))
    }
-   if(user && user.isActive === false){
+   if(user.isActive === false){
     return next(new AppError(`The User belongs to this email does no longer exist.`,401))
    }
-    if(!user || !(await user.isCorrectPassword(req.body.password,user.password))){
+    if(!(await user.isCorrectPassword(req.body.password,user.password))){
         return next(new AppError(`Invalid Credentials`,401))
     }
     user.fcmToken = req.body.fcmToken

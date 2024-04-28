@@ -11,7 +11,7 @@ io.on('connection',async (socket)=>{
     if(socket.handshake.query.socketStatus === 'chat'){
     socket.on('sendMessage',(data)=> {
         console.log(data)
-        chatController.sendMessage({chatSocketId:socket.id,...data},io,currentUser)
+        chatController.sendMessageInSocket({chatSocketId:socket.id,...data},io,currentUser)
     })
 } else if(socket.handshake.query.socketStatus === 'mapTracking'){
     let isFirstTime = true

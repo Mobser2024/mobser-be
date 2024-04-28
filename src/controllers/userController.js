@@ -150,6 +150,79 @@ exports.checkUsername = catchAsync(async (req,res,next) => {
     })
 })
 
+exports.getMyNotifications = catchAsync(async (req, res, next) => {
+    const { page = 1, limit = 20 } = req.query;
+
+    // Convert page and limit to numbers
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+
+    // Calculate skip value for pagination
+    const skip = (pageNumber - 1) * limitNumber;
+    const results = await User.aggregate([
+        { $match: { _id: req.user._id } }, // Match the user by ID
+        { $unwind: '$notifications' }, // Unwind the notifications array
+        { $sort: { 'notifications.createdAt': -1 } }, 
+        { $skip: skip },// Sort notifications by createdAt in descending order
+        { $limit: limitNumber } // Limit to the newest 2 notifications
+      ])
+      
+      // Extract the sorted list of notifications
+      const notifications = results.map(user => user.notifications);
+      notifications.reverse()
+
+      res.status(200).json({
+        status: "success",
+        data: {
+            notifications
+        }
+    })
+
+
+})
+
+exports.readMyNotifications = catchAsync(async (req, res, next) => {
+    const {  limit = 5 } = req.query;
+
+    const limitNumber = parseInt(limit);
+    const result = await User.findById(req.user._id).select('+notifications')
+    
+      
+      // Extract the sorted list of notifications
+      const sortedNotifications = result.notifications;
+      sortedNotifications.reverse()
+      const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      };
+      let message = 'Here are the notifications:'
+      for(let i = 0 ; i < Math.min(limitNumber,sortedNotifications.length) ; i++){
+        let textForChat = sortedNotifications[i].data.notificationType === 'chat' ? ` \n The message is` : ''
+        message += `\n notification number ${i+1}. \n ${sortedNotifications[i].notification.title}.${textForChat} \n ${sortedNotifications[i].notification.body}. \n at ${sortedNotifications[i].createdAt.toLocaleString('en-US', options)}.`
+      }
+      if(sortedNotifications.length === 0){
+        message = `You don't have notifications`
+      }
+      res.status(200).json({
+        status: "success",
+        message
+    })
+
+})
+
+exports.getMyAddress = catchAsync(async (req, res, next) => {
+    res.status(200).json({
+        status: "success",
+        data: {
+            address: req.user.addressLocation
+        }
+    })
+})
+
 exports.assignSocketIdToUser = async (token,socket,socketStatus)=> {
     try{
         //TODO check if the user is acttive

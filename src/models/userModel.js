@@ -64,9 +64,17 @@ const userSchema = mongoose.Schema({
                 id: String,
                 username: String,
                 name: String,
-                notificationType: String
+                notificationType: {
+                    type: String,
+                    required: [true, 'The notification must have a type'],
+                    enum : ['chat','tracking'],
+                },
+            },
+            createdAt: { 
+                type: Date,
+                default: new Date()
             }
-        
+            
     }],
     select: false
     },
