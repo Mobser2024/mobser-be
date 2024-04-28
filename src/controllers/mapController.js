@@ -22,6 +22,9 @@ exports.changePosititon = async (io,data,socket,isFirstTime,currentUser) => {
             token: toUser.fcmToken 
         }
         sendNotification(fcmMessage)
+        const notifiedUser = await User.findByIdAndUpdate(toUser._id,
+            { $push: { notifications: fcmMessage } },
+            { new: true, useFindAndModify: false ,runValidators:true})
        return 
     }
     console.log(toUser)

@@ -16,6 +16,7 @@ router.patch('/add-relative',authController.protect,userController.addRelativeUs
 router.route('/relatives').get(authController.protect,userController.getRelatives)
 
 router.get('/check-user/:username',userController.checkUsername)
-
+router.get('/me/notifications',authController.protect,userController.getMyNotifications)
+router.get('/me/read-notifications',authController.protect,userController.readMyNotifications)
 
 module.exports = router

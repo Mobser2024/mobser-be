@@ -10,7 +10,7 @@ const multer = require('multer')
 const sharp = require('sharp')
 const AppError = require('../utils/appError')
 
-exports.sendMessage = async (data,io,currentUser) => {
+exports.sendMessageInSocket = async (data,io,currentUser) => {
     try{
     console.log(data)
     // const currentUser = await User.findOne({chatSocketId: data.chatSocketId}).select('+isActive')
@@ -57,12 +57,61 @@ exports.sendMessage = async (data,io,currentUser) => {
         token: toUser.fcmToken
     }
     sendNotification(fcmMessage)
+    const notifiedUser = await User.findByIdAndUpdate(toUser._id,
+        { $push: { notifications: fcmMessage } },
+        { new: true, useFindAndModify: false ,runValidators:true})
 }catch(e){
     console.log(e)
     return io.to(data.chatSocketId).emit('error', 'Something went wrong');
 }
-
 }
+
+exports.sendMessage = catchAsync(async (req, res, next) => {
+    const toUser = await User.findOne({name: req.body.to}).select('+chatSocketId +socketStatus +fcmToken')
+    if(!req.user.relatives.includes(toUser._id)){
+        return next(new AppError('This user isn\'t your relative',400))
+    }
+    
+    const message = await Message.create({
+        from:req.user._id,
+        to: toUser._id,
+        message: req.body.message,
+        messageType:req.body.messageType,
+        createdAt: new Date(Date.now())
+    })
+    if(toUser.chatSocketId ){
+        console.log('user is online') 
+        return req.io.to(toUser.chatSocketId).emit('message', message);
+    }
+    if(!toUser.fcmToken){
+        res.status(201).json({
+            status:"success",
+            message: `${toUser.name} isn't logged in. ${toUser.name} will get the message after logging in`
+       })
+    }
+    const fcmMessage = {
+        notification: {
+            title: `Message from ${req.user.name}`,
+            body: message.type === "audio" ? "Audio" : message.type === "image" ? "Image" : message.message
+        },
+        data: {
+            id: req.user.id,
+            username: req.user.username,
+            name: req.user.name,
+            notificationType: "chat"
+        },
+        token: toUser.fcmToken
+    }
+    sendNotification(fcmMessage)
+    const notifiedUser = await User.findByIdAndUpdate(toUser._id,
+        { $push: { notifications: fcmMessage } },
+        { new: true, useFindAndModify: false ,runValidators:true})
+
+        res.status(201).json({
+            status:"success",
+            message: `message sent to ${toUser.name} successfully`
+       })
+})
 
 // exports.getMessages = catchAsync(async (req,res,next)=>{
     
