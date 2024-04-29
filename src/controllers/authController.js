@@ -98,7 +98,7 @@ exports.signup = catchAsync(async (req,res,next)=>{
         gender: req.body.gender,
         email: req.body.email ,
         password: req.body.password,
-        device: device._id
+        device: device ? device._id : undefined
     })
 if(req.body.relatives){
     

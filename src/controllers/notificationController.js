@@ -78,4 +78,34 @@ exports.acceptTrackingNotification = catchAsync(async (req,res,next)=>{
     
 })
 
+exports.imagesProcessedNotification = catchAsync(async (req, res, next) => {
+    const relativesIds = req.user.relatives
+    for(let relativeId of relativesIds){
+        const notifiedUser = await User.findById(relativeId).select('+fcmToken +nottifications')
+        let message = {
+            notification: {
+                title: `Images Processed`,
+                body: `Your relative ${req.user.name} has uploaded his images.`
+            },
+            data: {
+                id: req.user.id,
+                username: req.user.username,
+                name: req.user.name,
+                notificationType: "image_processing",
+                link: req.body.link,
+            },
+        }
+        if(notifiedUser.fcmToken){
+            sendNotification({
+                ...message,
+                token: notifiedUser.fcmToken, // Add the new field here
+              })
+        }
+        notifiedUser.notifications.push(message)
+        await notifiedUser.save()
+
+    }
+
+})
+
 
