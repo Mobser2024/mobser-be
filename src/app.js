@@ -63,7 +63,7 @@ app.use(express.json({
 
 app.use(express.urlencoded({ 
     extended: true,
-    limit:'10kb' 
+    limit:'100kb' 
 }))
 
 
