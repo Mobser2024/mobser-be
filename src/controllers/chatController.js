@@ -67,10 +67,13 @@ exports.sendMessageInSocket = async (data,io,currentUser) => {
 }
 
 exports.sendMessage = catchAsync(async (req, res, next) => {
-    const toUser = await User.findOne({name: req.body.to}).select('+chatSocketId +socketStatus +fcmToken')
+    const toUser = await User.findOne({name: { $regex: new RegExp('^'+req.body.to, 'i') }}).select('+chatSocketId +socketStatus +fcmToken')
+
+    console.log(toUser)
     if(!req.user.relatives.includes(toUser._id)){
         return next(new AppError('This user isn\'t your relative',400))
     }
+    //{ yourStringField: { $regex: new RegExp(searchTerm, 'i') } },
     const message = await Message.create({
         from:req.user._id,
         to: toUser._id,
