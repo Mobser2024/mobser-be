@@ -87,7 +87,7 @@ exports.signup = catchAsync(async (req,res,next)=>{
     
         // const decodedtoken = Buffer.from(req.body.macAddress, 'base64').toString();
         // const decoded = await promisify(jwt.verify)(decodedtoken,process.env.JWT_QR_CODE_SECRET)
-       const device = await Device.findOne({macAddress:req.body.macAddress})
+    //    const device = await Device.findOne({macAddress:req.body.macAddress})
        
     
     const newUser = await User.create({
@@ -98,7 +98,7 @@ exports.signup = catchAsync(async (req,res,next)=>{
         gender: req.body.gender,
         email: req.body.email ,
         password: req.body.password,
-        device: device ? device._id : undefined
+        // device: device ? device._id : undefined
     })
 if(req.body.relatives){
     
