@@ -81,7 +81,8 @@ exports.acceptTrackingNotification = catchAsync(async (req,res,next)=>{
 exports.imagesProcessedNotification = catchAsync(async (req, res, next) => {
     const relativesIds = req.user.relatives
     for(let relativeId of relativesIds){
-        const notifiedUser = await User.findById(relativeId).select('+fcmToken +nottifications')
+        const notifiedUser = await User.findById(relativeId).select('+fcmToken +notifications')
+        if(notifiedUser.userType === "user"){
         let message = {
             notification: {
                 title: `Images Processed`,
@@ -92,7 +93,7 @@ exports.imagesProcessedNotification = catchAsync(async (req, res, next) => {
                 username: req.user.username,
                 name: req.user.name,
                 notificationType: "image_processing",
-                link: req.body.link,
+                link: req.link,
             },
         }
         if(notifiedUser.fcmToken){
@@ -103,8 +104,13 @@ exports.imagesProcessedNotification = catchAsync(async (req, res, next) => {
         }
         notifiedUser.notifications.push(message)
         await notifiedUser.save()
-
     }
+    }
+    res.status(200).json({
+        status:"success",
+        message: 'Images processed successfully'
+   })
+    
 
 })
 
