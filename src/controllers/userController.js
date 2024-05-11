@@ -7,14 +7,28 @@ const {promisify} = require('util')
 const jwt = require('jsonwebtoken')
 const { relative } = require('path')
 const s3 = require('../utils/s3')
+const { nextTick } = require('process')
 
 const multerStorage = multer.memoryStorage()
 const multerFilter = (req,file,cb) =>{
+    console.log(file.mimetype)
+    console.log(req.url)
+    if(req.url === "/me/process-images"){
+       
+        if(file.mimetype === 'application/octet-stream'){
+            cb(null,true)
+        }else{
+           return cb(new AppError('Not a pickle! Please upload only pickles.',400))
+        }
+
+    }else{
     if(file.mimetype.startsWith('image')){
         cb(null,true)
     }else{
        return cb(new AppError('Not an image! Please upload only images.',400))
     }
+}
+    
 }
 
 const upload = multer({
@@ -222,6 +236,24 @@ exports.getMyAddress = catchAsync(async (req, res, next) => {
         }
     })
 })
+
+exports.uploadPickle = upload.single('pickle')
+
+exports.uploadPickleToS3 = catchAsync(async (req, res, next) => {
+    if(!req.file){
+        return next(new AppError('No pickle file to upload', 400))
+    }
+    req.file.filename = `pickles/profiles/user-${req.user.id}-${Date.now()}.pickle`
+    const result =  await s3.uploadFile(req.file,'application/octet-stream')
+
+    console.log('the s3 result '+ result)
+    req.link = result 
+    req.user.pickleUrl = result
+    await req.user.save()
+    next()
+})
+
+
 
 exports.assignSocketIdToUser = async (token,socket,socketStatus)=> {
     try{

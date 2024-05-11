@@ -22,6 +22,9 @@ const userSchema = mongoose.Schema({
     photo: {
         type: String
     },
+    pickleUrl : {
+        type: String
+    },
     phoneNumber: {
         type: String,
         unique: [true, 'This phone number is already in use'],
@@ -67,7 +70,7 @@ const userSchema = mongoose.Schema({
                 notificationType: {
                     type: String,
                     required: [true, 'The notification must have a type'],
-                    enum : ['chat','tracking'],
+                    enum : ['chat','tracking', 'image_processing'],
                 },
             },
             createdAt: { 

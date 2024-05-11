@@ -2,6 +2,7 @@ const express = require("express");
 
 const authController = require('../controllers/authController')
 const userController = require('../controllers/userController')
+const notificationController = require('../controllers/notificationController')
 
 
 
@@ -18,5 +19,6 @@ router.route('/relatives').get(authController.protect,userController.getRelative
 router.get('/check-user/:username',userController.checkUsername)
 router.get('/me/notifications',authController.protect,userController.getMyNotifications)
 router.get('/me/read-notifications',authController.protect,userController.readMyNotifications)
+router.post('/me/process-images',authController.protect,userController.uploadPickle, userController.uploadPickleToS3, notificationController.imagesProcessedNotification)
 
 module.exports = router
