@@ -70,15 +70,21 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     const toUser = await User.findOne({name: { $regex: new RegExp('^'+req.body.to, 'i') }}).select('+chatSocketId +socketStatus +fcmToken')
 
     console.log(toUser)
+    if(!toUser){
+        return next(new AppError('No user with this name', 400))
+    }
     if(!req.user.relatives.includes(toUser._id)){
         return next(new AppError('This user isn\'t your relative',400))
     }
     //{ yourStringField: { $regex: new RegExp(searchTerm, 'i') } },
+    if(!req.body.message){
+        return next(new AppError(`There's no message body`, 400))
+    }
     const message = await Message.create({
         from:req.user._id,
         to: toUser._id,
         message: req.body.message,
-        messageType:req.body.messageType,
+        messageType:req.body.messageType ?? "text",
         createdAt: new Date(Date.now())
     })
     if(toUser.chatSocketId ){
