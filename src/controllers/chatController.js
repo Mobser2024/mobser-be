@@ -67,7 +67,7 @@ exports.sendMessageInSocket = async (data,io,currentUser) => {
 }
 
 exports.sendMessage = catchAsync(async (req, res, next) => {
-    const toUser = await User.findOne({name: { $regex: new RegExp('^'+req.body.to, 'i') }}).select('+chatSocketId +socketStatus +fcmToken')
+    const toUser = await User.findOne({name: { $regex: new RegExp('^'+req.body.to+ "$", 'i') }}).select('+chatSocketId +socketStatus +fcmToken')
 
     console.log(toUser)
     if(!toUser){
