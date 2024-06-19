@@ -144,7 +144,7 @@ exports.verifyAccount = catchAsync(async (req,res,next) => {
     }
 
    
-    createAndSendToken(freshUser,200,res,true)
+    res.redirect('/successPage');
 })
 
 exports.login = catchAsync(async (req,res,next)=>{
@@ -185,14 +185,14 @@ exports.deviceLogin = catchAsync(async (req,res,next)=>{
    const user = await User.findOne({device:device.id})
    if(user && user.isVerified === false){
     return next(new AppError(`This email isn't verified yet.`,401))
-   }
+   } 
    if(user && user.isActive === false){
     return next(new AppError(`The User belongs to this email does no longer exist.`,401))
    }
     if(!user){
         return next(new AppError(`This device isn't assigned to user yet.`,401))
     }
-
+ 
     createAndSendToken(user,200,res,false)
 })
 
@@ -212,7 +212,7 @@ exports.forgotPassword = catchAsync(async(req,res,next)=>{
     }
     const resetToken = signToken(user.id,'resetPassword')
     const base64EncodedToken = Buffer.from(resetToken).toString('base64');
-    const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${base64EncodedToken}`
+    const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/auth/reset-password/${base64EncodedToken}`
     new Email(user,resetUrl).sendPasswordReset()
     res.status(200).json({
         status: "success",
@@ -225,16 +225,22 @@ exports.forgotPassword = catchAsync(async(req,res,next)=>{
 exports.resetPassword = catchAsync(async(req,res,next)=>{
     const token = Buffer.from(req.params.token, 'base64').toString();
     const decoded = await promisify(jwt.verify)(token,process.env.JWT_RESET_SECRET)
+    const user = await User.findById(decoded.id)
     if(decoded.iat + 10 * 60 < Math.ceil(Date.now()/1000)){
-        const user = await User.findById(decoded.id)
         const token = signToken(decoded.id,'resetPassword')
         const base64EncodedToken = Buffer.from(token).toString('base64');
-        const url = `${req.protocol}://${req.get('host')}/api/v1/auth/reset-password/${base64EncodedToken}`
+        const url = `${req.protocol}://${req.get('host')}:3000/api/v1/auth/reset-password/${base64EncodedToken}`
         new Email(user,url).sendPasswordReset()
         return next(new AppError('This token is expired. Please check your mail box for new link',400))
     }
+    user.password = req.body.newPassword
+    await user.save()
+
+    res.redirect('/successPage');
 
 })
+
+
 
 exports.updatePassword = catchAsync(async (req,res,next)=>{
     const user = await User.findById(req.user.id).select('+password')
