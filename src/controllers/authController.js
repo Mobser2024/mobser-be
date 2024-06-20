@@ -143,8 +143,8 @@ exports.verifyAccount = catchAsync(async (req,res,next) => {
         return next(new AppError('The User belongs to this token does no longer exist.',401))
     }
 
+   res.redirect('../successPage')
    
-    res.redirect('/successPage');
 })
 
 exports.login = catchAsync(async (req,res,next)=>{
@@ -185,14 +185,14 @@ exports.deviceLogin = catchAsync(async (req,res,next)=>{
    const user = await User.findOne({device:device.id})
    if(user && user.isVerified === false){
     return next(new AppError(`This email isn't verified yet.`,401))
-   } 
+   }
    if(user && user.isActive === false){
     return next(new AppError(`The User belongs to this email does no longer exist.`,401))
    }
     if(!user){
         return next(new AppError(`This device isn't assigned to user yet.`,401))
     }
- 
+
     createAndSendToken(user,200,res,false)
 })
 
@@ -229,15 +229,18 @@ exports.resetPassword = catchAsync(async(req,res,next)=>{
     if(decoded.iat + 10 * 60 < Math.ceil(Date.now()/1000)){
         const token = signToken(decoded.id,'resetPassword')
         const base64EncodedToken = Buffer.from(token).toString('base64');
-        const url = `${req.protocol}://${req.get('host')}:3000/api/v1/auth/reset-password/${base64EncodedToken}`
+        const url = `/api/v1/auth/reset-password/${base64EncodedToken}`
         new Email(user,url).sendPasswordReset()
         return next(new AppError('This token is expired. Please check your mail box for new link',400))
     }
     user.password = req.body.newPassword
     await user.save()
-
-    res.redirect('/successPage');
-
+ 
+    res.status(200).json({
+        status:"success",
+        message: 'Password changed successfully.'
+   })
+ 
 })
 
 
